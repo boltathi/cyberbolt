@@ -1,0 +1,88 @@
+"""Authentication endpoints."""
+from flask import request, jsonify
+from flask_restx import Namespace, Resource
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_jwt,
+    get_jwt_identity,
+    jwt_required,
+)
+from ...services.auth_service import AuthService
+from ...extensions import limiter, redis_jwt
+
+ns = Namespace("auth", description="Authentication")
+
+
+@ns.route("/login")
+class Login(Resource):
+    @limiter.limit("10/minute")
+    def post(self):
+        """Authenticate and get JWT tokens."""
+        data = request.get_json()
+        if not data:
+            return {"error": "Missing JSON body"}, 400
+
+        username = data.get("username", "")
+        password = data.get("password", "")
+
+        user = AuthService.authenticate(username, password)
+        if not user:
+            return {"error": "Invalid credentials"}, 401
+
+        additional_claims = {"role": user.get("role", "user")}
+        access_token = create_access_token(identity=user["id"], additional_claims=additional_claims)
+        refresh_token = create_refresh_token(identity=user["id"], additional_claims=additional_claims)
+
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user": {
+                "id": user["id"],
+                "username": user["username"],
+                "email": user.get("email"),
+                "role": user.get("role"),
+            },
+        }
+
+
+@ns.route("/refresh")
+class Refresh(Resource):
+    @jwt_required(refresh=True)
+    def post(self):
+        """Refresh access token."""
+        identity = get_jwt_identity()
+        claims = get_jwt()
+        access_token = create_access_token(
+            identity=identity,
+            additional_claims={"role": claims.get("role", "user")},
+        )
+        return {"access_token": access_token}
+
+
+@ns.route("/logout")
+class Logout(Resource):
+    @jwt_required()
+    def delete(self):
+        """Logout — add token to blocklist."""
+        jti = get_jwt()["jti"]
+        if redis_jwt:
+            redis_jwt.set(f"blocklist:{jti}", "1", ex=3600)
+        return {"message": "Successfully logged out"}
+
+
+@ns.route("/me")
+class Me(Resource):
+    @jwt_required()
+    def get(self):
+        """Get current user profile."""
+        user_id = get_jwt_identity()
+        user = AuthService.get_user_by_id(user_id)
+        if not user:
+            return {"error": "User not found"}, 404
+        return {
+            "id": user["id"],
+            "username": user["username"],
+            "email": user.get("email"),
+            "role": user.get("role"),
+        }

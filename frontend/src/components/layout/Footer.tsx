@@ -1,0 +1,69 @@
+import Link from "next/link";
+import { Shield, Github, Twitter, Linkedin, FileText } from "lucide-react";
+
+export default function Footer() {
+  return (
+    <footer className="border-t border-white/10 bg-gray-950">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+          {/* Brand */}
+          <div className="space-y-4">
+            <Link href="/" className="flex items-center gap-2 text-lg font-bold">
+              <Shield className="h-6 w-6 text-cyber-400" />
+              <span className="text-white">CyberBolt</span>
+            </Link>
+            <p className="text-sm text-gray-400">
+              Exploring the intersection of AI, security, and technology.
+            </p>
+          </div>
+
+          {/* Content */}
+          <div>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-300">
+              Content
+            </h3>
+            <ul className="space-y-2 text-sm text-gray-400">
+              <li><Link href="/articles" className="hover:text-white transition-colors">Articles</Link></li>
+              <li><Link href="/learning" className="hover:text-white transition-colors">Learning Hub</Link></li>
+              <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+            </ul>
+          </div>
+
+          {/* About */}
+          <div>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-300">
+              About
+            </h3>
+            <ul className="space-y-2 text-sm text-gray-400">
+              <li><Link href="/about" className="hover:text-white transition-colors">About Me</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+              <li><Link href="/llms.txt" className="hover:text-white transition-colors flex items-center gap-1"><FileText className="h-3 w-3" /> llms.txt</Link></li>
+            </ul>
+          </div>
+
+          {/* Social */}
+          <div>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-300">
+              Connect
+            </h3>
+            <div className="flex gap-3">
+              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
+                <Github className="h-5 w-5" />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
+                <Twitter className="h-5 w-5" />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
+                <Linkedin className="h-5 w-5" />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 border-t border-white/10 pt-8 text-center text-sm text-gray-500">
+          © {new Date().getFullYear()} CyberBolt. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  );
+}
