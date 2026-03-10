@@ -59,7 +59,8 @@ echo -e "${GREEN}   ✅ .env loaded${NC}"
 echo -e "${CYAN}[1/6] Checking Redis...${NC}"
 
 # Extract password from REDIS_URL (format: redis://:PASSWORD@host:port/db)
-REDIS_PASS=$(echo "$REDIS_URL" | sed -n 's|redis://:\([^@]*\)@.*|\1|p')
+# The password may be URL-encoded (e.g. %40 for @), so decode it for redis-cli
+REDIS_PASS=$(echo "$REDIS_URL" | sed -n 's|redis://:\([^@]*\)@.*|\1|p' | python3 -c "import sys, urllib.parse; print(urllib.parse.unquote(sys.stdin.read().strip()))")
 
 if [ -n "$REDIS_PASS" ]; then
     REDIS_CLI_AUTH="-a $REDIS_PASS"
