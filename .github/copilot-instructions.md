@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-CyberBolt is a Flask + Next.js content platform: **backend** (Flask :5000), **frontend** (Next.js :3000), and **Redis** (5 DBs). All data is stored in Redis (DB 4) via `RedisRepository` — no filesystem storage. Run locally with `./start-local.sh`.
+CyberBolt is a Flask + Next.js content platform: **backend** (Flask :5000), **frontend** (Next.js :3000), and **Redis** (5 DBs). All data is stored in Redis (DB 4) via `RedisRepository` — no filesystem storage.
 
 ## Backend (Flask)
 
@@ -30,10 +30,19 @@ CyberBolt is a Flask + Next.js content platform: **backend** (Flask :5000), **fr
 ## Key Developer Commands
 
 ```bash
-./start-local.sh        # Start backend + frontend (Flask + Next.js)
-./start-local.sh stop   # Stop all services
-cd backend && source venv/bin/activate && python -m pytest tests/ -v   # Run tests
-cd backend && python scripts/seed.py   # Populate sample data
+# Backend (terminal 1)
+cd backend && source venv/bin/activate
+FLASK_ENV=development FLASK_APP=wsgi:app flask run --port=5000
+
+# Frontend (terminal 2)
+cd frontend
+NEXT_PUBLIC_API_URL=http://localhost:5000 INTERNAL_API_URL=http://localhost:5000 npx next dev
+
+# Tests
+cd backend && source venv/bin/activate && python -m pytest tests/ -v
+
+# Seed data
+cd backend && source venv/bin/activate && python scripts/seed.py
 ```
 
 ## Patterns to Follow
