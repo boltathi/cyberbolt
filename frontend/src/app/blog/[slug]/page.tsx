@@ -92,7 +92,10 @@ export default async function BlogDetailPage({
           )}
         </header>
 
-        <div className="prose-cyber whitespace-pre-wrap">{post.content}</div>
+        <div
+          className="prose-cyber"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
       </article>
     </>
   );

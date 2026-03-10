@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from ..models import get_articles_repo
 from ..models.schemas import ArticleCreateSchema, ArticleUpdateSchema
 from ..extensions import cache
+from ..utils.sanitize import sanitize_html, sanitize_plain, sanitize_tags, sanitize_slug
 
 
 class ArticleService:
@@ -70,6 +71,16 @@ class ArticleService:
     def create(data: dict):
         schema = ArticleCreateSchema()
         validated = schema.load(data)
+        # Sanitize user-supplied content
+        validated["content"] = sanitize_html(validated.get("content", ""))
+        validated["excerpt"] = sanitize_plain(validated.get("excerpt", ""), 500)
+        validated["title"] = sanitize_plain(validated.get("title", ""), 200)
+        validated["meta_title"] = sanitize_plain(validated.get("meta_title", ""), 200)
+        validated["meta_description"] = sanitize_plain(validated.get("meta_description", ""), 500)
+        if validated.get("slug"):
+            validated["slug"] = sanitize_slug(validated["slug"])
+        if validated.get("tags"):
+            validated["tags"] = sanitize_tags(validated["tags"])
         validated["views"] = 0
         if validated.get("status") == "published":
             validated["published_at"] = datetime.now(timezone.utc).isoformat()
@@ -80,6 +91,21 @@ class ArticleService:
     def update(article_id: str, data: dict):
         schema = ArticleUpdateSchema()
         validated = schema.load(data)
+        # Sanitize user-supplied content
+        if "content" in validated:
+            validated["content"] = sanitize_html(validated["content"])
+        if "excerpt" in validated:
+            validated["excerpt"] = sanitize_plain(validated["excerpt"], 500)
+        if "title" in validated:
+            validated["title"] = sanitize_plain(validated["title"], 200)
+        if "meta_title" in validated:
+            validated["meta_title"] = sanitize_plain(validated["meta_title"], 200)
+        if "meta_description" in validated:
+            validated["meta_description"] = sanitize_plain(validated["meta_description"], 500)
+        if "slug" in validated:
+            validated["slug"] = sanitize_slug(validated["slug"])
+        if "tags" in validated:
+            validated["tags"] = sanitize_tags(validated["tags"])
         repo = get_articles_repo()
         existing = repo.find_by_id(article_id)
         if not existing:

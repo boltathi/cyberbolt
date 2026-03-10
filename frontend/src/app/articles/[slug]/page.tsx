@@ -97,7 +97,10 @@ export default async function ArticleDetailPage({
           )}
         </header>
 
-        <div className="prose-cyber whitespace-pre-wrap">{article.content}</div>
+        <div
+          className="prose-cyber"
+          dangerouslySetInnerHTML={{ __html: article.content }}
+        />
       </article>
     </>
   );

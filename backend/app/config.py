@@ -21,6 +21,7 @@ class BaseConfig:
     REDIS_SESSION_URL = os.getenv("REDIS_SESSION_URL", "redis://localhost:6379/1")
     REDIS_RATE_LIMIT_URL = os.getenv("REDIS_RATE_LIMIT_URL", "redis://localhost:6379/2")
     REDIS_JWT_BLOCKLIST_URL = os.getenv("REDIS_JWT_BLOCKLIST_URL", "redis://localhost:6379/3")
+    REDIS_DATA_URL = os.getenv("REDIS_DATA_URL", "redis://localhost:6379/4")
 
     # Cache
     CACHE_TYPE = "RedisCache"
@@ -32,15 +33,20 @@ class BaseConfig:
 
     # Rate Limiting
     RATELIMIT_STORAGE_URI = os.getenv("REDIS_RATE_LIMIT_URL", "redis://localhost:6379/2")
-    RATELIMIT_DEFAULT = os.getenv("RATE_LIMIT_DEFAULT", "200/hour")
+    RATELIMIT_DEFAULT = os.getenv("RATE_LIMIT_DEFAULT", "100/hour")
+    RATELIMIT_HEADERS_ENABLED = True
 
-    # Data
+    # Data (kept for backward compat but no longer used for storage)
     DATA_DIR = os.getenv("DATA_DIR", os.path.join(os.path.dirname(os.path.dirname(__file__)), "data"))
 
-    # Admin
+    # Admin — MUST be set via env vars in production
     ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "change-me-in-production")
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@cyberbolt.in")
+
+    # JWT cookie security
+    JWT_COOKIE_SECURE = True
+    JWT_COOKIE_SAMESITE = "Lax"
 
     # Domain
     DOMAIN = os.getenv("DOMAIN", "cyberbolt.in")
@@ -49,6 +55,7 @@ class BaseConfig:
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     CACHE_TYPE = "SimpleCache"
+    RATELIMIT_STORAGE_URI = "memory://"
 
 
 class ProductionConfig(BaseConfig):
@@ -59,6 +66,7 @@ class TestingConfig(BaseConfig):
     TESTING = True
     CACHE_TYPE = "SimpleCache"
     RATELIMIT_ENABLED = False
+    REDIS_DATA_URL = os.getenv("REDIS_DATA_URL", "redis://localhost:6379/15")
 
 
 config_map = {

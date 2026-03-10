@@ -16,15 +16,18 @@ ns = Namespace("auth", description="Authentication")
 
 @ns.route("/login")
 class Login(Resource):
-    @limiter.limit("10/minute")
+    @limiter.limit("5/minute")
     def post(self):
         """Authenticate and get JWT tokens."""
-        data = request.get_json()
-        if not data:
-            return {"error": "Missing JSON body"}, 400
+        data = request.get_json(silent=True)
+        if not data or not isinstance(data, dict):
+            return {"error": "Missing or invalid JSON body"}, 400
 
-        username = data.get("username", "")
-        password = data.get("password", "")
+        username = str(data.get("username", ""))[:100].strip()
+        password = str(data.get("password", ""))[:200]
+
+        if not username or not password:
+            return {"error": "Username and password are required"}, 400
 
         user = AuthService.authenticate(username, password)
         if not user:

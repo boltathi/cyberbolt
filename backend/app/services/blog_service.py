@@ -2,6 +2,7 @@
 from datetime import datetime, timezone
 from slugify import slugify
 from ..models import get_blog_repo
+from ..utils.sanitize import sanitize_html, sanitize_plain, sanitize_tags, sanitize_slug
 
 
 class BlogService:
@@ -29,7 +30,12 @@ class BlogService:
 
     @staticmethod
     def create(data: dict):
-        data["slug"] = slugify(data.get("title", ""))
+        data["title"] = sanitize_plain(data.get("title", ""), 200)
+        data["slug"] = sanitize_slug(slugify(data.get("title", "")))
+        data["content"] = sanitize_html(data.get("content", ""))
+        data["excerpt"] = sanitize_plain(data.get("excerpt", ""), 500)
+        if data.get("tags"):
+            data["tags"] = sanitize_tags(data["tags"])
         data["views"] = 0
         if data.get("status") == "published":
             data["published_at"] = datetime.now(timezone.utc).isoformat()
@@ -39,7 +45,14 @@ class BlogService:
     @staticmethod
     def update(post_id: str, data: dict):
         if "title" in data:
-            data["slug"] = slugify(data["title"])
+            data["title"] = sanitize_plain(data["title"], 200)
+            data["slug"] = sanitize_slug(slugify(data["title"]))
+        if "content" in data:
+            data["content"] = sanitize_html(data["content"])
+        if "excerpt" in data:
+            data["excerpt"] = sanitize_plain(data["excerpt"], 500)
+        if "tags" in data:
+            data["tags"] = sanitize_tags(data["tags"])
         repo = get_blog_repo()
         existing = repo.find_by_id(post_id)
         if not existing:

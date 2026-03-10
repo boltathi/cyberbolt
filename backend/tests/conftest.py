@@ -1,24 +1,30 @@
 """Pytest fixtures for CyberBolt tests."""
 import os
-import tempfile
 import pytest
 from app import create_app
 
 
 @pytest.fixture
 def app():
-    """Create test application with temp data directory."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        os.environ["DATA_DIR"] = tmpdir
-        os.environ["FLASK_ENV"] = "testing"
-        application = create_app("testing")
-        application.config["DATA_DIR"] = tmpdir
+    """Create test application — uses Redis DB 15 for test isolation."""
+    # Use a dedicated Redis DB for testing so we can flush safely
+    os.environ["FLASK_ENV"] = "testing"
+    os.environ.setdefault("REDIS_DATA_URL", "redis://localhost:6379/15")
 
-        yield application
+    application = create_app("testing")
 
-        # Cleanup repos cache
-        from app.models import _repos
-        _repos.clear()
+    # Flush the test data DB before each test
+    from app.extensions import redis_data
+    if redis_data:
+        redis_data.flushdb()
+
+    yield application
+
+    # Cleanup: flush again + clear cached repo instances
+    if redis_data:
+        redis_data.flushdb()
+    from app.models import _repos
+    _repos.clear()
 
 
 @pytest.fixture

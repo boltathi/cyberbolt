@@ -23,18 +23,12 @@ out/
 .env.local
 .env.production
 
-# Data (JSON storage)
-data/*.json
-
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# Docker
-docker-compose.override.yml
 
 # SSL
 ssl/

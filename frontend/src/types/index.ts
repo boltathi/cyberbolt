@@ -38,8 +38,13 @@ export interface LearningResource {
   slug: string;
   content: string;
   excerpt: string;
+  description?: string;
   category: string;
   difficulty: "beginner" | "intermediate" | "advanced";
+  resource_type?: string;
+  estimated_minutes?: number;
+  external_url?: string;
+  is_free?: boolean;
   tags: string[];
   published: boolean;
   order: number;

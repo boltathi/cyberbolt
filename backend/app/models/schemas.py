@@ -5,6 +5,7 @@ from slugify import slugify
 
 class ArticleCreateSchema(Schema):
     title = fields.Str(required=True)
+    slug = fields.Str()
     content = fields.Str(required=True)
     excerpt = fields.Str(load_default="")
     category = fields.Str(load_default="ai-security")
@@ -16,7 +17,13 @@ class ArticleCreateSchema(Schema):
     featured_image = fields.Str(load_default="")
 
     @pre_load
-    def generate_slug(self, data, **kwargs):
+    def normalize_fields(self, data, **kwargs):
+        if "featured" in data:
+            data["is_featured"] = data.pop("featured")
+        if "published" in data:
+            data["status"] = "published" if data.pop("published") else "draft"
+        if "og_image" in data:
+            data["featured_image"] = data.pop("og_image")
         if "title" in data and "slug" not in data:
             data["slug"] = slugify(data["title"])
         return data
@@ -24,6 +31,7 @@ class ArticleCreateSchema(Schema):
 
 class ArticleUpdateSchema(Schema):
     title = fields.Str()
+    slug = fields.Str()
     content = fields.Str()
     excerpt = fields.Str()
     category = fields.Str()
@@ -35,7 +43,13 @@ class ArticleUpdateSchema(Schema):
     featured_image = fields.Str()
 
     @pre_load
-    def generate_slug(self, data, **kwargs):
+    def normalize_fields(self, data, **kwargs):
+        if "featured" in data:
+            data["is_featured"] = data.pop("featured")
+        if "published" in data:
+            data["status"] = "published" if data.pop("published") else "draft"
+        if "og_image" in data:
+            data["featured_image"] = data.pop("og_image")
         if "title" in data:
             data["slug"] = slugify(data["title"])
         return data

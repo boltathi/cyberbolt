@@ -1,28 +1,33 @@
-"""Model repository factory functions."""
+"""Model repository factory functions — backed by Redis."""
 from flask import current_app
-from .base import JsonRepository
+from .base import RedisRepository
 
-_repos = {}
+_repos: dict[str, RedisRepository] = {}
 
 
-def _get_repo(name: str) -> JsonRepository:
+def _get_repo(name: str) -> RedisRepository:
     if name not in _repos:
-        data_dir = current_app.config.get("DATA_DIR", "data")
-        _repos[name] = JsonRepository(data_dir, name)
+        from ..extensions import redis_data
+        if redis_data is None:
+            raise RuntimeError(
+                "Redis data client not initialised. "
+                "Make sure REDIS_DATA_URL is set and Redis is reachable."
+            )
+        _repos[name] = RedisRepository(redis_data, name)
     return _repos[name]
 
 
-def get_articles_repo() -> JsonRepository:
+def get_articles_repo() -> RedisRepository:
     return _get_repo("articles")
 
 
-def get_blog_repo() -> JsonRepository:
+def get_blog_repo() -> RedisRepository:
     return _get_repo("blog")
 
 
-def get_learning_repo() -> JsonRepository:
+def get_learning_repo() -> RedisRepository:
     return _get_repo("learning")
 
 
-def get_users_repo() -> JsonRepository:
+def get_users_repo() -> RedisRepository:
     return _get_repo("users")

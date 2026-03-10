@@ -1,5 +1,6 @@
 """Learning service — business logic for AI security learning hub."""
 from ..models import get_learning_repo
+from ..utils.sanitize import sanitize_html, sanitize_plain, sanitize_tags
 
 
 LEARNING_CATEGORIES = [
@@ -79,11 +80,24 @@ class LearningService:
 
     @staticmethod
     def create(data: dict):
+        data["title"] = sanitize_plain(data.get("title", ""), 200)
+        data["content"] = sanitize_html(data.get("content", ""))
+        data["excerpt"] = sanitize_plain(data.get("excerpt", ""), 500)
+        if data.get("tags"):
+            data["tags"] = sanitize_tags(data["tags"])
         repo = get_learning_repo()
         return repo.create(data)
 
     @staticmethod
     def update(resource_id: str, data: dict):
+        if "title" in data:
+            data["title"] = sanitize_plain(data["title"], 200)
+        if "content" in data:
+            data["content"] = sanitize_html(data["content"])
+        if "excerpt" in data:
+            data["excerpt"] = sanitize_plain(data["excerpt"], 500)
+        if "tags" in data:
+            data["tags"] = sanitize_tags(data["tags"])
         repo = get_learning_repo()
         return repo.update(resource_id, data)
 
