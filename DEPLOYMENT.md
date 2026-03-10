@@ -17,6 +17,7 @@ A complete step-by-step guide to deploy a Flask + Next.js app on a Contabo (or a
 9. [Managing the Running App](#9-managing-the-running-app)
 10. [Redeploying After Code Changes](#10-redeploying-after-code-changes)
 11. [Troubleshooting](#11-troubleshooting)
+12. [Problems Faced & Solutions (Deploy Log)](#12-problems-faced--solutions-cyberbolt-deploy-log)
 
 ---
 
@@ -489,3 +490,179 @@ dig www.yourdomain.com +short      # Same IP
 | Renew SSL | `sudo certbot renew` |
 | Generate a secret | `openssl rand -hex 32` |
 | Check server IP | `curl -4 ifconfig.me` |
+
+---
+
+## 12. Problems Faced & Solutions (CyberBolt Deploy Log)
+
+A log of every issue encountered during the actual CyberBolt deployment to Contabo, for future reference.
+
+---
+
+### Problem 1: Redis "not reachable" — `@` in password breaks URL parsing
+
+**Symptom:** Deploy script reports `❌ Redis not reachable` even though Redis is running.
+
+**Root cause:** The Redis password `ZohoTest@24` contains `@`, which is the credentials/host separator in URLs. `redis://:ZohoTest@24@localhost:6379/0` is ambiguous — the parser thinks the password is `ZohoTest` and the host is `24@localhost`.
+
+**Solution:** URL-encode special characters in the `.env` file:
+- `@` → `%40`
+- `#` → `%23`
+- `:` → `%3A`
+
+```dotenv
+# ❌ Wrong
+REDIS_URL=redis://:ZohoTest@24@localhost:6379/0
+
+# ✅ Correct
+REDIS_URL=redis://:ZohoTest%4024@localhost:6379/0
+```
+
+---
+
+### Problem 2: `redis-cli` needs decoded password, not URL-encoded
+
+**Symptom:** Deploy script's Redis check fails. `redis-cli -a ZohoTest%4024 ping` doesn't authenticate.
+
+**Root cause:** The deploy script extracted the password from `REDIS_URL` (which is URL-encoded: `ZohoTest%4024`), but `redis-cli` needs the actual password (`ZohoTest@24`).
+
+**Solution:** Pipe through Python's `urllib.parse.unquote` to decode:
+
+```bash
+REDIS_PASS=$(echo "$REDIS_URL" | sed -n 's|redis://:\([^@]*\)@.*|\1|p' \
+  | python3 -c "import sys, urllib.parse; print(urllib.parse.unquote(sys.stdin.read().strip()))")
+```
+
+---
+
+### Problem 3: `python3 -m venv` fails silently on Ubuntu
+
+**Symptom:** Deploy script passes step [2/6] but backend fails later. The `venv/` directory exists but is broken (missing `venv/bin/activate`).
+
+**Root cause:** On Ubuntu, `python3 -m venv` requires the `python3-venv` package. Without it, the command fails silently and creates an incomplete directory.
+
+**Solution:**
+1. Check for `venv/bin/activate` (not just `venv/` directory)
+2. Remove broken venvs before retrying
+3. Show a helpful error message
+
+```bash
+if [ ! -f "venv/bin/activate" ]; then
+    rm -rf venv
+    python3 -m venv venv || {
+        echo "Failed. Run: sudo apt install python3-venv -y"
+        exit 1
+    }
+fi
+```
+
+Install fix: `sudo apt install python3-venv -y`
+
+---
+
+### Problem 4: Health check looked for `"ok"` but endpoint returns `"healthy"`
+
+**Symptom:** Deploy script reports `❌ Backend failed` even though gunicorn starts successfully with 3 workers.
+
+**Root cause:** The health endpoint `/api/v1/health` returns `{"status": "healthy"}`, but the deploy script used `grep -q "ok"` — which never matches.
+
+**Solution:** Changed `grep -q "ok"` to `grep -q "healthy"` and added the actual health response to error output for easier debugging.
+
+---
+
+### Problem 5: TypeScript build error — `difficulty` type mismatch
+
+**Symptom:** `npm run build` fails with: `Type 'string' is not assignable to type '"beginner" | "intermediate" | "advanced"'`
+
+**Root cause:** `useState({ difficulty: "beginner" })` infers `difficulty` as `string`, but the API function expects the narrow union type `"beginner" | "intermediate" | "advanced"`.
+
+**Solution:** Cast in the payload:
+
+```typescript
+const payload = {
+  ...form,
+  difficulty: form.difficulty as "beginner" | "intermediate" | "advanced",
+  tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+};
+```
+
+---
+
+### Problem 6: TypeScript build error — implicit `any[]`
+
+**Symptom:** `npm run build` fails with: `Variable 'featuredArticles' implicitly has type 'any[]'`
+
+**Root cause:** `let featuredArticles = []` is inferred as `any[]` under TypeScript strict mode.
+
+**Solution:** Add explicit type annotation:
+
+```typescript
+import { Article } from "@/types";
+let featuredArticles: Article[] = [];
+```
+
+---
+
+### Problem 7: Frontend screen session dies silently
+
+**Symptom:** `❌ Frontend failed. Debug: screen -r cyberbolt-frontend` but `screen -ls` shows no frontend session.
+
+**Root cause:** Three issues combined:
+1. `NEXT_PUBLIC_*` env vars weren't passed during `npm run build` (Next.js inlines them at build time)
+2. `INTERNAL_API_URL` wasn't passed to the screen session
+3. No log file — the screen session crashed with no trace
+
+**Solution:**
+- Pass env vars at build time: `NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" npm run build`
+- Pass all env vars to the screen session
+- Log output to `/var/log/cyberbolt-frontend.log`
+- Verify `.next/standalone/server.js` exists before trying to start
+- Print last 10 lines of log on failure
+
+---
+
+### Problem 8: HTTPS not working after redeploy (503 error)
+
+**Symptom:** `http://cyberbolt.in` works but `https://cyberbolt.in` returns 503 / "can't establish connection".
+
+**Root cause:** The deploy script's Nginx step **overwrites** `/etc/nginx/sites-available/cyberbolt` every time with an HTTP-only config, destroying the SSL directives that Certbot had added.
+
+**Solution:** Check if Certbot has already configured SSL before writing the Nginx config:
+
+```bash
+if [ -f "$NGINX_CONF" ] && grep -q "ssl_certificate" "$NGINX_CONF"; then
+    echo "SSL config exists (managed by Certbot) — skipping overwrite"
+else
+    cat > "$NGINX_CONF" <<NGINX
+    # ... base HTTP config ...
+NGINX
+fi
+```
+
+After fixing, re-run `sudo certbot --nginx -d cyberbolt.in -d www.cyberbolt.in` to restore SSL.
+
+---
+
+### Problem 9: GoDaddy DNS — `www` record conflicts
+
+**Symptom:** Adding an A record for `www` in GoDaddy fails with "Record name www conflicts with another record."
+
+**Root cause:** GoDaddy had an existing **CNAME** record for `www` (default parking page). You can't have both a CNAME and an A record for the same name.
+
+**Solution:** Delete the existing CNAME record for `www` first, then add the A record.
+
+---
+
+### Key Lessons Learned
+
+| Lesson | Detail |
+|--------|--------|
+| **URL-encode Redis passwords** | Special chars (`@#:`) in passwords break URL parsing |
+| **`redis-cli` needs decoded passwords** | URL-encoded values don't work with `redis-cli -a` |
+| **Ubuntu needs `python3-venv` package** | `python3 -m venv` fails silently without it |
+| **Always match health check strings** | If endpoint returns `"healthy"`, don't grep for `"ok"` |
+| **Next.js inlines `NEXT_PUBLIC_*` at build time** | Must be present during `npm run build`, not just at runtime |
+| **Log everything in screen sessions** | Redirect stdout/stderr to log files for debugging |
+| **Don't overwrite Certbot's Nginx config** | Check for `ssl_certificate` before writing Nginx config |
+| **TypeScript strict mode** | Always add explicit types to `let x = []` declarations |
+| **Delete conflicting DNS records** | Remove old CNAMEs before adding A records |
