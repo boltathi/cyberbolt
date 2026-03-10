@@ -74,6 +74,7 @@ export default function AdminLearningEditorPage() {
 
     const payload = {
       ...form,
+      difficulty: form.difficulty as "beginner" | "intermediate" | "advanced",
       tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
     };
 
