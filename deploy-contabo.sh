@@ -106,15 +106,23 @@ cd "$FRONTEND_DIR"
 npm install --legacy-peer-deps -q 2>&1 | tail -1
 
 echo -e "   Building Next.js (this takes a minute)..."
-npm run build 2>&1 | tail -5
+# NEXT_PUBLIC_* vars must be present at build time — Next.js inlines them
+NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
+NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" \
+npm run build 2>&1 | tail -10
 
-# Copy static assets to standalone (required for Next.js standalone mode)
-if [ -d ".next/standalone" ]; then
-    cp -r public .next/standalone/ 2>/dev/null || true
-    cp -r .next/static .next/standalone/.next/ 2>/dev/null || true
+# Verify standalone build succeeded
+if [ ! -f ".next/standalone/server.js" ]; then
+    echo -e "${RED}   ❌ Next.js standalone build failed — .next/standalone/server.js not found${NC}"
+    echo "      Try running manually: cd $FRONTEND_DIR && npm run build"
+    exit 1
 fi
 
-echo -e "${GREEN}   ✅ Frontend built${NC}"
+# Copy static assets to standalone (required for Next.js standalone mode)
+cp -r public .next/standalone/ 2>/dev/null || true
+cp -r .next/static .next/standalone/.next/ 2>/dev/null || true
+
+echo -e "${GREEN}   ✅ Frontend built (standalone)${NC}"
 
 # ─── Nginx config ────────────────────────────────────────────
 echo -e "${CYAN}[4/6] Configuring Nginx...${NC}"
@@ -214,23 +222,32 @@ screen -dmS cyberbolt-frontend bash -c "
     cd $FRONTEND_DIR && \
     export PORT=3000 && \
     export HOSTNAME=0.0.0.0 && \
-    exec node .next/standalone/server.js
+    export NEXT_PUBLIC_API_URL='$NEXT_PUBLIC_API_URL' && \
+    export INTERNAL_API_URL='$INTERNAL_API_URL' && \
+    export NEXT_PUBLIC_SITE_URL='$NEXT_PUBLIC_SITE_URL' && \
+    node .next/standalone/server.js >> /var/log/cyberbolt-frontend.log 2>&1
 "
 
 echo -n "   Waiting for frontend"
-for i in {1..10}; do
+for i in {1..20}; do
     if curl -s http://127.0.0.1:3000 > /dev/null 2>&1; then
         break
     fi
     echo -n "."
-    sleep 1
+    sleep 2
 done
 echo ""
 
 if curl -s http://127.0.0.1:3000 > /dev/null 2>&1; then
     echo -e "${GREEN}   ✅ Frontend running →  screen -r cyberbolt-frontend${NC}"
 else
-    echo -e "${RED}   ❌ Frontend failed. Debug: screen -r cyberbolt-frontend${NC}"
+    echo -e "${RED}   ❌ Frontend failed. Debug:${NC}"
+    echo "      tail -30 /var/log/cyberbolt-frontend.log"
+    echo "      screen -ls"
+    if [ -f /var/log/cyberbolt-frontend.log ]; then
+        echo -e "${RED}   Last 10 lines of frontend log:${NC}"
+        tail -10 /var/log/cyberbolt-frontend.log
+    fi
     exit 1
 fi
 
