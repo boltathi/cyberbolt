@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Shield, BookOpen, Brain, Lock, Zap, ArrowRight } from "lucide-react";
 import { articlesAPI } from "@/lib/api";
+import { Article } from "@/types";
 import { formatDate, truncate, CATEGORIES } from "@/lib/utils";
 
 export default async function HomePage() {
-  let featuredArticles = [];
+  let featuredArticles: Article[] = [];
   try {
     featuredArticles = await articlesAPI.featured();
   } catch {
