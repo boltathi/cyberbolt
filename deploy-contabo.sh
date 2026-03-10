@@ -190,21 +190,22 @@ screen -dmS cyberbolt-backend bash -c "
 
 # Wait for backend
 echo -n "   Waiting for backend"
-for i in {1..15}; do
-    if curl -s http://127.0.0.1:5000/api/v1/health 2>/dev/null | grep -q "ok"; then
+for i in {1..20}; do
+    if curl -s http://127.0.0.1:5000/api/v1/health 2>/dev/null | grep -q "healthy"; then
         break
     fi
     echo -n "."
-    sleep 1
+    sleep 2
 done
 echo ""
 
-if curl -s http://127.0.0.1:5000/api/v1/health 2>/dev/null | grep -q "ok"; then
+HEALTH_RESP=$(curl -s http://127.0.0.1:5000/api/v1/health 2>/dev/null)
+if echo "$HEALTH_RESP" | grep -q "healthy"; then
     echo -e "${GREEN}   ✅ Backend running  →  screen -r cyberbolt-backend${NC}"
 else
-    echo -e "${RED}   ❌ Backend failed. Debug:${NC}"
+    echo -e "${RED}   ❌ Backend failed. Health response: $HEALTH_RESP${NC}"
     echo "      screen -r cyberbolt-backend"
-    echo "      cat /var/log/cyberbolt-backend-error.log"
+    echo "      tail -20 /var/log/cyberbolt-backend-error.log"
     exit 1
 fi
 
