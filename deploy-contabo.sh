@@ -80,8 +80,14 @@ echo -e "${CYAN}[2/6] Setting up backend...${NC}"
 
 cd "$BACKEND_DIR"
 
-if [ ! -d "venv" ]; then
-    python3 -m venv venv
+if [ ! -f "venv/bin/activate" ]; then
+    rm -rf venv
+    echo -e "   Creating Python venv..."
+    python3 -m venv venv || {
+        echo -e "${RED}   ❌ Failed to create venv. Install python3-venv:${NC}"
+        echo "      sudo apt install python3-venv -y"
+        exit 1
+    }
     echo -e "   Created Python venv"
 fi
 
