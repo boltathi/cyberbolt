@@ -51,6 +51,11 @@ class BaseConfig:
     # Domain
     DOMAIN = os.getenv("DOMAIN", "cyberbolt.in")
 
+    # SMTP (Gmail) for contact form
+    SMTP_USER = os.getenv("SMTP_USER", "")
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")  # Gmail App Password
+    CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "")
+
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True

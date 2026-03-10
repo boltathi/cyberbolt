@@ -3,19 +3,37 @@
 import { useState } from "react";
 import { Send, Mail, MessageSquare } from "lucide-react";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("sending");
+    setErrorMsg("");
 
-    // For now, just simulate — replace with actual API later
-    setTimeout(() => {
-      setStatus("sent");
-      setForm({ name: "", email: "", message: "" });
-    }, 1000);
+    try {
+      const res = await fetch(`${API_URL}/api/v1/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setStatus("sent");
+        setForm({ name: "", email: "", message: "" });
+      } else {
+        setStatus("error");
+        setErrorMsg(data.message || "Failed to send. Please try again.");
+      }
+    } catch {
+      setStatus("error");
+      setErrorMsg("Network error. Please try again later.");
+    }
   };
 
   return (
@@ -99,7 +117,7 @@ export default function ContactPage() {
 
         {status === "error" && (
           <div className="rounded-lg bg-red-500/10 p-3 text-sm text-red-400">
-            Failed to send. Please try again later.
+            {errorMsg || "Failed to send. Please try again later."}
           </div>
         )}
       </form>
