@@ -129,7 +129,11 @@ echo -e "${CYAN}[4/6] Configuring Nginx...${NC}"
 
 NGINX_CONF="/etc/nginx/sites-available/cyberbolt"
 
-cat > "$NGINX_CONF" <<NGINX
+# If Certbot has already configured SSL, don't overwrite — just reload
+if [ -f "$NGINX_CONF" ] && grep -q "ssl_certificate" "$NGINX_CONF"; then
+    echo -e "${GREEN}   ✅ Nginx SSL config exists (managed by Certbot) — skipping overwrite${NC}"
+else
+    cat > "$NGINX_CONF" <<NGINX
 server {
     listen 80;
     server_name ${DOMAIN} www.${DOMAIN};
@@ -158,13 +162,15 @@ server {
     }
 }
 NGINX
+    echo -e "${GREEN}   ✅ Nginx base config written${NC}"
+fi
 
 ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
 if nginx -t 2>&1 | grep -q "successful"; then
     systemctl reload nginx
-    echo -e "${GREEN}   ✅ Nginx configured & reloaded${NC}"
+    echo -e "${GREEN}   ✅ Nginx reloaded${NC}"
 else
     echo -e "${RED}   ❌ Nginx config error:${NC}"
     nginx -t
