@@ -29,6 +29,7 @@ export const SITE_DESCRIPTION =
   "AI Security Learning Hub, Technology Articles & Lifestyle Blog by CyberBolt";
 
 export const CATEGORIES = [
+  // Tech & Security
   "AI Security",
   "Machine Learning",
   "Cybersecurity",
@@ -37,6 +38,15 @@ export const CATEGORIES = [
   "Privacy",
   "DevSecOps",
   "Threat Intelligence",
+  // Lifestyle & Learning
+  "Health & Wellness",
+  "Finance & Investing",
+  "Life Hacks",
+  "Travel & Exploration",
+  "Food & Cooking",
+  "Personal Growth",
+  "Career & Productivity",
+  "Tech Reviews",
 ];
 
 export const DIFFICULTY_COLORS: Record<string, string> = {

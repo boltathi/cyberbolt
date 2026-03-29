@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { blogAPI } from "@/lib/api";
+import RichTextEditor from "@/components/editor/RichTextEditor";
 
 export default function AdminBlogEditorPage() {
   const router = useRouter();
@@ -97,7 +98,13 @@ export default function AdminBlogEditorPage() {
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-300">Content *</label>
-            <textarea required rows={15} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className="cyber-textarea font-mono text-sm" placeholder="Write your blog post..." />
+            <RichTextEditor
+              required
+              value={form.content}
+              onChange={(content) => setForm({ ...form, content })}
+              placeholder="Write your blog post..."
+              rows={20}
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-300">Tags</label>

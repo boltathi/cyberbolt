@@ -50,7 +50,7 @@
 ## Features
 
 ### Content
-- 📝 **Articles** — AI security articles with categories, tags, search, and pagination
+- 📝 **Articles** — Tech & security articles plus lifestyle content (Health, Finance, Travel, Life Hacks, etc.) with 16 categories, tags, search, and pagination
 - 📚 **Learning Hub** — Structured learning paths with 8 categories and 3 difficulty levels
 - ✍️ **Blog** — Lifestyle/personal blog with rich content
 - 🔍 **Search** — Full-text search across all content
@@ -63,6 +63,7 @@
 - 🔐 **Authentication** — JWT-based login with admin role
 - 📊 **Dashboard** — Content statistics and quick actions
 - ✏️ **CRUD** — Full create/read/update/delete for articles, blog posts, and learning resources
+- 📝 **Rich Text Editor** — Toolbar with Bold, Italic, Headings, Lists, Blockquote, Code, Links, Spacing, and character count
 - 🏷️ **SEO Fields** — Custom meta titles, descriptions, and OG images per content item
 
 ### Infrastructure
@@ -297,6 +298,8 @@ cyberbolt/
 │   │   │   ├── llms.txt/route.ts        # Proxy to backend
 │   │   │   └── llms-full.txt/route.ts   # Proxy to backend
 │   │   ├── components/
+│   │   │   ├── editor/
+│   │   │   │   └── RichTextEditor.tsx # Toolbar-based content editor
 │   │   │   ├── layout/
 │   │   │   │   ├── Header.tsx       # Nav bar (7 links incl. Tools)
 │   │   │   │   └── Footer.tsx       # Site footer
@@ -305,7 +308,7 @@ cyberbolt/
 │   │   ├── lib/
 │   │   │   ├── api.ts           # fetchAPI, fetchServerAPI, all API clients
 │   │   │   ├── store.ts         # Zustand auth store
-│   │   │   └── utils.ts         # cn() helper, utilities
+│   │   │   └── utils.ts         # cn() helper, CATEGORIES, utilities
 │   │   └── types/
 │   │       └── index.ts         # TypeScript interfaces
 │   ├── next.config.ts

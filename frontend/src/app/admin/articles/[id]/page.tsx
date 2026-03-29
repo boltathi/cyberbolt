@@ -6,6 +6,7 @@ import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { articlesAPI } from "@/lib/api";
 import { CATEGORIES } from "@/lib/utils";
+import RichTextEditor from "@/components/editor/RichTextEditor";
 import type { Article } from "@/types";
 
 export default function AdminArticleEditorPage() {
@@ -126,13 +127,12 @@ export default function AdminArticleEditorPage() {
 
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-300">Content *</label>
-            <textarea
+            <RichTextEditor
               required
-              rows={15}
               value={form.content}
-              onChange={(e) => setForm({ ...form, content: e.target.value })}
-              className="cyber-textarea font-mono text-sm"
+              onChange={(content) => setForm({ ...form, content })}
               placeholder="Write your article content..."
+              rows={20}
             />
           </div>
 
