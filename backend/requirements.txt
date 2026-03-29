@@ -12,3 +12,4 @@ bcrypt==4.2.1
 marshmallow==3.23.2
 python-dotenv==1.0.1
 gunicorn==23.0.0
+requests==2.32.3

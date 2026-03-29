@@ -56,6 +56,10 @@ class BaseConfig:
     SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")  # Gmail App Password
     CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "")
 
+    # Ollama (local LLM)
+    OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+    OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:0.5b")
+
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True

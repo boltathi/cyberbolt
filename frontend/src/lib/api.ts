@@ -5,6 +5,7 @@ import type {
   PaginatedResponse,
   AuthTokens,
   User,
+  OwaspChecklistResponse,
 } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -200,4 +201,15 @@ export const aiAPI = {
   llmsTxt: () =>
     fetch(`${API_BASE}/api/v1/ai/llms.txt`).then((r) => r.text()),
   content: () => fetchServerAPI<{ articles: Article[] }>("/ai/content"),
+};
+
+// OWASP Checklist Generator API (admin-only)
+export const owaspAPI = {
+  generate: (appName: string, appType: string) =>
+    fetchAPI<OwaspChecklistResponse>("/ai/owasp/generate", {
+      method: "POST",
+      body: JSON.stringify({ app_name: appName, app_type: appType }),
+    }),
+  appTypes: () =>
+    fetchAPI<{ app_types: string[] }>("/ai/owasp/app-types").then((d) => d.app_types),
 };

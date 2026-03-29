@@ -83,3 +83,19 @@ export interface DashboardStats {
   blog_posts: number;
   learning_resources: number;
 }
+
+export interface OwaspChecklistItem {
+  id: string;
+  category: string;
+  severity: string;
+  description: string;
+  recommendation: string;
+  checked: boolean;
+}
+
+export interface OwaspChecklistResponse {
+  app_name: string;
+  app_type: string;
+  checklist: OwaspChecklistItem[];
+  generated_at: string;
+}

@@ -47,6 +47,9 @@ coverage/
 .DS_Store
 Thumbs.db
 
+# Redis
+dump.rdb
+
 # Logs
 *.log
 logs/
