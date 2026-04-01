@@ -68,7 +68,7 @@
 ### Infrastructure
 - ⚡ **Redis** — 5 databases (DB 0 cache, DB 1 sessions, DB 2 rate-limits, DB 3 JWT blocklist, DB 4 data storage)
 - 🧠 **Ollama** — Local LLM server running Qwen2.5-0.5B (~600 MB RAM), auto-unloads after 5 min idle
-- 🔒 **Security** — Rate limiting, CORS, HSTS, CSP headers, bcrypt, JWT auth
+- 🔒 **Security** — Rate limiting, CORS, HSTS, CSP headers, bcrypt, JWT auth, input sanitization (bleach), 5 MB request limit, Marshmallow validation
 - 📈 **Scalable** — Gunicorn workers, standalone Next.js, horizontal scaling ready
 
 ## Quick Start

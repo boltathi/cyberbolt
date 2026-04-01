@@ -13,8 +13,8 @@ def create_app(config_name: str | None = None) -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_map.get(config_name, config_map["production"]))
 
-    # ── Request body size limit (1 MB) — DoS prevention ───
-    app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024
+    # ── Request body size limit (5 MB) — DoS prevention ───
+    app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
     # Initialize extensions
     cache.init_app(app)
@@ -61,7 +61,7 @@ def create_app(config_name: str | None = None) -> Flask:
 
     @app.errorhandler(413)
     def payload_too_large(e):
-        return jsonify({"error": "Payload too large", "max_size": "1MB"}), 413
+        return jsonify({"error": "Payload too large", "message": "Payload too large (max 5MB)", "max_size": "5MB"}), 413
 
     @app.errorhandler(429)
     def rate_limited(e):
@@ -69,7 +69,14 @@ def create_app(config_name: str | None = None) -> Flask:
 
     @app.errorhandler(500)
     def server_error(e):
-        return jsonify({"error": "Internal server error"}), 500
+        app.logger.error(f"Internal server error: {e}")
+        return jsonify({"error": "Internal server error", "message": "Internal server error"}), 500
+
+    # Global handler for Marshmallow validation errors
+    from marshmallow import ValidationError
+    @app.errorhandler(ValidationError)
+    def handle_validation_error(e):
+        return jsonify({"error": "Validation failed", "message": str(e.messages)}), 400
 
     # JWT callbacks
     @jwt.token_in_blocklist_loader

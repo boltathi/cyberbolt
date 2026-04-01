@@ -2,6 +2,7 @@
 import math
 from flask import request
 from flask_restx import Namespace, Resource
+from marshmallow import ValidationError
 from ...services.article_service import ArticleService
 from ...utils.decorators import admin_required
 from ...extensions import limiter
@@ -97,11 +98,13 @@ class AdminArticleList(Resource):
         """Create a new article."""
         data = request.get_json(silent=True)
         if not data or not isinstance(data, dict):
-            return {"error": "Missing or invalid JSON body"}, 400
+            return {"error": "Missing or invalid JSON body", "message": "Missing or invalid JSON body"}, 400
         try:
             article = ArticleService.create(data)
+        except ValidationError as e:
+            return {"error": "Validation failed", "message": str(e.messages)}, 400
         except (ValueError, RuntimeError) as e:
-            return {"error": str(e)}, 400
+            return {"error": str(e), "message": str(e)}, 400
         return {"article": article, "message": "Article created"}, 201
 
 
@@ -113,13 +116,15 @@ class AdminArticleDetail(Resource):
         """Update an article."""
         data = request.get_json(silent=True)
         if not data or not isinstance(data, dict):
-            return {"error": "Missing or invalid JSON body"}, 400
+            return {"error": "Missing or invalid JSON body", "message": "Missing or invalid JSON body"}, 400
         try:
             article = ArticleService.update(article_id, data)
-        except ValueError as e:
-            return {"error": str(e)}, 400
+        except ValidationError as e:
+            return {"error": "Validation failed", "message": str(e.messages)}, 400
+        except (ValueError, RuntimeError) as e:
+            return {"error": str(e), "message": str(e)}, 400
         if not article:
-            return {"error": "Article not found"}, 404
+            return {"error": "Article not found", "message": "Article not found"}, 404
         return {"article": article, "message": "Article updated"}
 
     @admin_required()

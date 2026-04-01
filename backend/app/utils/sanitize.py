@@ -14,11 +14,13 @@ ALLOWED_TAGS = [
 ]
 
 ALLOWED_ATTRIBUTES = {
-    "*": ["class", "id"],
+    "*": ["class", "id", "style"],
     "a": ["href", "title", "target", "rel"],
     "img": ["src", "alt", "title", "width", "height", "loading"],
-    "td": ["colspan", "rowspan"],
-    "th": ["colspan", "rowspan"],
+    "td": ["colspan", "rowspan", "style"],
+    "th": ["colspan", "rowspan", "style"],
+    "mark": ["data-color", "style"],
+    "span": ["data-color", "style"],
 }
 
 ALLOWED_PROTOCOLS = ["http", "https", "mailto", "data"]
