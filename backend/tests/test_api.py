@@ -19,30 +19,6 @@ def test_articles_empty(client):
     assert data["total"] == 0
 
 
-def test_blog_empty(client):
-    """Test blog list when empty."""
-    response = client.get("/api/v1/blog")
-    assert response.status_code == 200
-    data = response.get_json()
-    assert data["posts"] == []
-
-
-def test_learning_categories(client):
-    """Test learning categories."""
-    response = client.get("/api/v1/learning/categories")
-    assert response.status_code == 200
-    data = response.get_json()
-    assert len(data["categories"]) == 8
-
-
-def test_learning_paths(client):
-    """Test learning paths."""
-    response = client.get("/api/v1/learning/paths")
-    assert response.status_code == 200
-    data = response.get_json()
-    assert len(data["paths"]) == 3
-
-
 def test_ai_llms_txt(client):
     """Test llms.txt endpoint."""
     response = client.get("/api/v1/ai/llms.txt")

@@ -146,7 +146,7 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_read_timeout 60s;
-        client_max_body_size 1m;
+        client_max_body_size 3m;
     }
 
     # Everything else → Next.js frontend (:3000)

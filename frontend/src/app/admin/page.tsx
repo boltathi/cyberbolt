@@ -2,28 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FileText, BookOpen, GraduationCap, Plus, ArrowRight } from "lucide-react";
-import { articlesAPI, blogAPI, learningAPI } from "@/lib/api";
+import { FileText, Plus, ArrowRight } from "lucide-react";
+import { articlesAPI } from "@/lib/api";
 import type { Article, DashboardStats } from "@/types";
 import { formatDate } from "@/lib/utils";
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats>({ articles: 0, blog_posts: 0, learning_resources: 0 });
+  const [stats, setStats] = useState<DashboardStats>({ articles: 0 });
   const [recentArticles, setRecentArticles] = useState<Article[]>([]);
 
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const [articlesData, blogData, learningData] = await Promise.all([
-          articlesAPI.adminList(1, 5),
-          blogAPI.adminList(1, 1),
-          learningAPI.adminList(1, 1),
-        ]);
-        setStats({
-          articles: articlesData.total,
-          blog_posts: blogData.total,
-          learning_resources: learningData.total,
-        });
+        const articlesData = await articlesAPI.adminList(1, 5);
+        setStats({ articles: articlesData.total });
         setRecentArticles(articlesData.items);
       } catch {
         // Silently fail
@@ -34,8 +26,6 @@ export default function AdminDashboard() {
 
   const statCards = [
     { label: "Articles", value: stats.articles, icon: FileText, href: "/admin/articles", color: "text-blue-400" },
-    { label: "Blog Posts", value: stats.blog_posts, icon: BookOpen, href: "/admin/blog", color: "text-green-400" },
-    { label: "Learning Resources", value: stats.learning_resources, icon: GraduationCap, href: "/admin/learning", color: "text-purple-400" },
   ];
 
   return (
@@ -48,7 +38,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      <div className="mb-8">
         {statCards.map((card) => (
           <Link key={card.href} href={card.href} className="cyber-card flex items-center gap-4">
             <div className={`rounded-lg bg-white/5 p-3 ${card.color}`}>
@@ -63,15 +53,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      <div className="mb-8">
         <Link href="/admin/articles/new" className="cyber-card flex items-center gap-3 text-sm text-gray-300 hover:text-white">
           <Plus className="h-5 w-5 text-blue-400" /> New Article
-        </Link>
-        <Link href="/admin/blog/new" className="cyber-card flex items-center gap-3 text-sm text-gray-300 hover:text-white">
-          <Plus className="h-5 w-5 text-green-400" /> New Blog Post
-        </Link>
-        <Link href="/admin/learning/new" className="cyber-card flex items-center gap-3 text-sm text-gray-300 hover:text-white">
-          <Plus className="h-5 w-5 text-purple-400" /> New Resource
         </Link>
       </div>
 

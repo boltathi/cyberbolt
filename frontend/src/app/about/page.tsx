@@ -35,7 +35,7 @@ export default function AboutPage() {
           </p>
 
           <p className="text-gray-300 leading-relaxed">
-            Through in-depth articles, structured learning paths, and hands-on
+            Through in-depth articles, tools, and hands-on
             resources, this platform aims to bridge the gap between cutting-edge AI
             research and practical security implementation.
           </p>
@@ -57,7 +57,7 @@ export default function AboutPage() {
             {
               icon: Mail,
               title: "Knowledge Sharing",
-              desc: "Technical writing, mentoring, and building learning resources for the community.",
+              desc: "Technical writing, mentoring, and building resources for the community.",
             },
           ].map((area) => (
             <div key={area.title} className="cyber-card text-center">

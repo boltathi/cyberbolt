@@ -21,13 +21,5 @@ def get_articles_repo() -> RedisRepository:
     return _get_repo("articles")
 
 
-def get_blog_repo() -> RedisRepository:
-    return _get_repo("blog")
-
-
-def get_learning_repo() -> RedisRepository:
-    return _get_repo("learning")
-
-
 def get_users_repo() -> RedisRepository:
     return _get_repo("users")

@@ -1,8 +1,8 @@
 # CyberBolt 🔒
 
-> AI Security Learning Hub, Technology Articles & Lifestyle Blog
+> AI Security Articles & Technology Platform
 
-**[cyberbolt.in](https://cyberbolt.in)** — An enterprise-grade web platform built with Flask + Next.js, featuring AI security articles, structured learning paths, a lifestyle blog, an AI-powered OWASP Top 10 Checklist Generator, and Agentic AI optimizations.
+**[cyberbolt.in](https://cyberbolt.in)** — An enterprise-grade web platform built with Flask + Next.js, featuring AI security articles, an AI-powered OWASP Top 10 Checklist Generator, full-text search, and Agentic AI optimizations.
 
 ---
 
@@ -50,10 +50,8 @@
 ## Features
 
 ### Content
-- 📝 **Articles** — Tech & security articles plus lifestyle content (Health, Finance, Travel, Life Hacks, etc.) with 16 categories, tags, search, and pagination
-- 📚 **Learning Hub** — Structured learning paths with 8 categories and 3 difficulty levels
-- ✍️ **Blog** — Lifestyle/personal blog with rich content
-- 🔍 **Search** — Full-text search across all content
+- 📝 **Articles** — Tech & security articles plus lifestyle content (Health, Finance, Travel, Life Hacks, etc.) with 16 categories, tags, search, pagination, optional author field, and copy-link sharing
+- 🔍 **Search** — Full-text search across articles with real-time results and search bar UI
 
 ### AI Tools
 - 🛡️ **OWASP Top 10 Checklist Generator** — Admin-only tool at `/tools/owasp-checklist`. User inputs app name + type, local LLM generates tailored security recommendations for each OWASP Top 10 category. Hybrid architecture: OWASP data hardcoded in Python, LLM only generates contextual recommendations.
@@ -62,8 +60,9 @@
 ### Admin Panel
 - 🔐 **Authentication** — JWT-based login with admin role
 - 📊 **Dashboard** — Content statistics and quick actions
-- ✏️ **CRUD** — Full create/read/update/delete for articles, blog posts, and learning resources
-- 📝 **Rich Text Editor** — Toolbar with Bold, Italic, Headings, Lists, Blockquote, Code, Links, Spacing, and character count
+- ✏️ **CRUD** — Full create/read/update/delete for articles with optional author field
+- 📝 **Rich Text Editor** — Enterprise-grade TipTap WYSIWYG editor with headings (H1-H3), bold/italic/underline/strikethrough, text alignment, bullet & ordered lists, blockquote, inline code, code blocks with syntax highlighting (Lowlight), links, image upload (max 2 MB, stored in Redis), tables (add/remove rows/columns), text color, highlight, undo/redo, and floating bubble menu
+- 🖼️ **Image Upload** — Admin-only image upload endpoint (`POST /api/v1/upload/image`). Images up to 2 MB stored as base64 in Redis, served via `GET /api/v1/upload/image/<id>` with immutable caching
 - 🏷️ **SEO Fields** — Custom meta titles, descriptions, and OG images per content item
 
 ### Infrastructure
@@ -135,15 +134,11 @@ cd backend && source venv/bin/activate && python -m pytest tests/ -v
 | GET | `/api/v1/articles/categories` | Article categories |
 | GET | `/api/v1/articles/search?q=` | Search articles |
 | GET | `/api/v1/articles/<slug>` | Get article by slug |
-| GET | `/api/v1/blog` | List blog posts |
-| GET | `/api/v1/blog/<slug>` | Get blog post by slug |
-| GET | `/api/v1/learning/categories` | Learning categories |
-| GET | `/api/v1/learning/paths` | Learning paths |
-| GET | `/api/v1/learning/resources` | List resources |
 | POST | `/api/v1/contact` | Submit contact form |
 | GET | `/api/v1/ai/llms.txt` | AI-readable site description |
 | GET | `/api/v1/ai/content` | All articles as JSON |
 | GET | `/api/v1/ai/articles/<slug>.md` | Article as markdown |
+| GET | `/api/v1/upload/image/<id>` | Serve uploaded image |
 
 ### Auth
 | Method | Endpoint | Description |
@@ -159,14 +154,9 @@ cd backend && source venv/bin/activate && python -m pytest tests/ -v
 | POST | `/api/v1/articles/admin` | Create article |
 | PUT | `/api/v1/articles/admin/<id>` | Update article |
 | DELETE | `/api/v1/articles/admin/<id>` | Delete article |
-| POST | `/api/v1/blog/admin` | Create blog post |
-| PUT | `/api/v1/blog/admin/<id>` | Update blog post |
-| DELETE | `/api/v1/blog/admin/<id>` | Delete blog post |
-| POST | `/api/v1/learning/admin` | Create resource |
-| PUT | `/api/v1/learning/admin/<id>` | Update resource |
-| DELETE | `/api/v1/learning/admin/<id>` | Delete resource |
 | GET | `/api/v1/ai/owasp/app-types` | List OWASP app types |
 | POST | `/api/v1/ai/owasp/generate` | Generate OWASP checklist |
+| POST | `/api/v1/upload/image` | Upload image (max 2 MB) |
 
 ## OWASP Top 10 Checklist Generator
 
@@ -252,17 +242,14 @@ cyberbolt/
 │   │   ├── services/
 │   │   │   ├── auth_service.py      # JWT auth + admin bootstrap
 │   │   │   ├── article_service.py   # Article CRUD + search
-│   │   │   ├── blog_service.py      # Blog post CRUD
-│   │   │   ├── learning_service.py  # Learning resources + paths
 │   │   │   └── owasp_service.py     # OWASP checklist + Ollama LLM
 │   │   ├── api/v1/
 │   │   │   ├── __init__.py      # Blueprint + namespace registration
 │   │   │   ├── health.py        # GET /health
 │   │   │   ├── auth.py          # Login/logout/refresh/me
 │   │   │   ├── articles.py      # Public + admin article endpoints
-│   │   │   ├── blog.py          # Public + admin blog endpoints
-│   │   │   ├── learning.py      # Public + admin learning endpoints
 │   │   │   ├── ai.py            # llms.txt, AI content, OWASP generator
+│   │   │   ├── upload.py        # Image upload/serve (Redis-stored)
 │   │   │   └── contact.py       # Contact form (SMTP)
 │   │   └── utils/
 │   │       ├── decorators.py    # @admin_required()
@@ -283,9 +270,7 @@ cyberbolt/
 │   │   │   ├── sitemap.ts           # Sitemap generator
 │   │   │   ├── about/page.tsx       # About page
 │   │   │   ├── contact/page.tsx     # Contact form
-│   │   │   ├── articles/            # Article list + [slug] detail
-│   │   │   ├── blog/               # Blog list + [slug] detail
-│   │   │   ├── learning/           # Learning hub + [id] detail
+│   │   │   ├── articles/            # Article list + search + [slug] detail
 │   │   │   ├── tools/
 │   │   │   │   └── owasp-checklist/page.tsx  # OWASP generator (admin-only)
 │   │   │   ├── admin/
@@ -293,15 +278,15 @@ cyberbolt/
 │   │   │   │   ├── page.tsx         # Dashboard
 │   │   │   │   ├── login/           # Login page (own layout)
 │   │   │   │   ├── articles/        # Article CRUD pages
-│   │   │   │   ├── blog/            # Blog CRUD pages
-│   │   │   │   └── learning/        # Learning CRUD pages
 │   │   │   ├── llms.txt/route.ts        # Proxy to backend
 │   │   │   └── llms-full.txt/route.ts   # Proxy to backend
 │   │   ├── components/
 │   │   │   ├── editor/
-│   │   │   │   └── RichTextEditor.tsx # Toolbar-based content editor
+│   │   │   │   └── RichTextEditor.tsx # TipTap WYSIWYG editor + image upload
+│   │   │   ├── ui/
+│   │   │   │   └── CopyLinkButton.tsx # Copy-to-clipboard button
 │   │   │   ├── layout/
-│   │   │   │   ├── Header.tsx       # Nav bar (7 links incl. Tools)
+│   │   │   │   ├── Header.tsx       # Nav bar (5 links incl. Tools)
 │   │   │   │   └── Footer.tsx       # Site footer
 │   │   │   └── seo/
 │   │   │       └── JsonLd.tsx       # Structured data components
@@ -315,7 +300,9 @@ cyberbolt/
 │   ├── tailwind.config.ts
 │   └── package.json
 ├── deploy-contabo.sh            # Full deployment script
+├── migrate.sh                   # Data migration manager (backup/audit/migrate/rollback/cleanup)
 ├── install-ollama.sh            # Ollama + model installer
+├── backups/                     # Redis RDB + JSON backups (gitignored)
 ├── .env.example
 └── README.md
 ```
@@ -343,12 +330,16 @@ cyberbolt/
 ## Roadmap
 
 - [x] OWASP Top 10 Checklist Generator (Ollama + Qwen2.5)
-- [ ] Markdown editor with live preview
-- [ ] Image upload (S3/local)
+- [x] Article search with search bar UI
+- [x] Blog removed — content unified into Articles
+- [x] Enterprise TipTap WYSIWYG editor with image upload
+- [x] Image upload stored in Redis (max 2 MB)
+- [x] Optional author field on articles
+- [x] Copy link button on article detail page
+- [x] Migration manager (`migrate.sh`) — backup, audit, migrate, rollback, cleanup
 - [ ] Email newsletter integration
 - [ ] Comments system
 - [ ] Analytics dashboard
-- [ ] Full-text search with Elasticsearch
 - [ ] CI/CD pipeline (GitHub Actions)
 - [ ] Monitoring (Prometheus + Grafana)
 

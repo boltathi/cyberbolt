@@ -25,13 +25,11 @@ export async function GET() {
 > Complete AI-readable content from CyberBolt
 
 ## About
-CyberBolt is an AI Security Learning Hub featuring in-depth articles on AI security,
+CyberBolt is an AI Security & Technology platform featuring in-depth articles on AI security,
 machine learning threats, cybersecurity research, and technology insights.
 
 ## Content Index
 - Articles: https://cyberbolt.in/articles
-- Learning Hub: https://cyberbolt.in/learning
-- Blog: https://cyberbolt.in/blog
 - About: https://cyberbolt.in/about
 - Contact: https://cyberbolt.in/contact
 

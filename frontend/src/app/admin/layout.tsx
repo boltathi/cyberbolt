@@ -7,8 +7,6 @@ import {
   Shield,
   LayoutDashboard,
   FileText,
-  BookOpen,
-  GraduationCap,
   LogOut,
   Menu,
   X,
@@ -18,8 +16,6 @@ import { useAuthStore } from "@/lib/store";
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/articles", label: "Articles", icon: FileText },
-  { href: "/admin/blog", label: "Blog Posts", icon: BookOpen },
-  { href: "/admin/learning", label: "Learning", icon: GraduationCap },
 ];
 
 export default function AdminLayout({

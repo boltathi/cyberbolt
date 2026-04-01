@@ -19,7 +19,7 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — AI Security Learning Hub`,
+    default: `${SITE_NAME} — AI Security & Technology`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -32,12 +32,12 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} — AI Security Learning Hub`,
+    title: `${SITE_NAME} — AI Security & Technology`,
     description: SITE_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — AI Security Learning Hub`,
+    title: `${SITE_NAME} — AI Security & Technology`,
     description: SITE_DESCRIPTION,
   },
   robots: {

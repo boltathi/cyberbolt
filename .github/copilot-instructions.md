@@ -25,7 +25,8 @@ This ensures `README.md` is always the single source of truth for the project.
 - **Validation**: Marshmallow schemas in `models/schemas.py` with `@pre_load` hooks for auto-slug generation via `python-slugify`.
 - **Auth**: JWT via `flask-jwt-extended`. Admin routes use `@admin_required()` decorator from `utils/decorators.py` which checks `role` claim. Token blocklist stored in Redis DB 3.
 - **Redis databases**: DB 0 = cache, DB 1 = sessions, DB 2 = rate limits, DB 3 = JWT blocklist, DB 4 = data storage. Redis is **required** — the app cannot store data without it.
-- **Content lifecycle**: Articles/blog posts have `status` field (`draft`/`published`). `published_at` is auto-set on first transition to `published`. Public endpoints filter by `status="published"` by default.
+- **Content lifecycle**: Articles have `status` field (`draft`/`published`). `published_at` is auto-set on first transition to `published`. Public endpoints filter by `status="published"` by default. Articles have an optional `author` field.
+- **Image upload**: `POST /api/v1/upload/image` accepts images up to 2 MB (JPEG, PNG, GIF, WebP, SVG), stores base64 in Redis as `images:<uuid>` hashes, serves via `GET /api/v1/upload/image/<id>` with immutable caching. Admin-only.
 - **Swagger docs** auto-generated at `/api/v1/docs` by Flask-RESTX.
 
 ## AI / LLM Layer (Ollama)
@@ -42,14 +43,15 @@ This ensures `README.md` is always the single source of truth for the project.
 
 - **App Router** with `src/app/` directory structure. Public pages use server-side fetching (`fetchServerAPI`), admin pages use client-side fetching (`fetchAPI`) with JWT from localStorage.
 - **Two fetch functions** in `lib/api.ts`: `fetchServerAPI` (server components, uses `INTERNAL_API_URL`, revalidates at 60s in prod / 0 in dev) and `fetchAPI` (client-side, attaches Bearer token from localStorage).
-- **API clients** in `lib/api.ts`: `articlesAPI`, `blogAPI`, `learningAPI`, `authAPI`, `aiAPI`, `owaspAPI`. The `owaspAPI` uses `fetchAPI` (sends JWT) since OWASP endpoints require admin auth.
+- **Rich Text Editor**: TipTap WYSIWYG in `components/editor/RichTextEditor.tsx` with headings, inline formatting, lists, blockquote, code blocks (syntax-highlighted via Lowlight), links, image upload (max 2 MB to `/api/v1/upload/image`), tables, text color/highlight, alignment, undo/redo, and floating bubble menu. Images stored in Redis, served via public URL.
+- **API clients** in `lib/api.ts`: `articlesAPI`, `authAPI`, `aiAPI`, `owaspAPI`. The `owaspAPI` uses `fetchAPI` (sends JWT) since OWASP endpoints require admin auth. Image uploads use direct `fetch` from the editor component.
 - **State management**: Zustand store in `lib/store.ts` for auth state only. Content data is fetched per-page, not stored globally.
 - **Admin panel** at `/admin/*` is fully client-side (`"use client"`). Auth guard in `admin/layout.tsx` redirects to `/admin/login` if unauthenticated. Login page uses its own layout (no sidebar).
 - **Tools pages** at `/tools/*` are public routes but may require admin auth. The OWASP page (`tools/owasp-checklist/page.tsx`) checks `useAuthStore().isAuthenticated` and shows a login prompt if not authenticated.
-- **SEO components** in `components/seo/JsonLd.tsx` — use `ArticleJsonLd`, `BlogPostJsonLd`, `WebSiteJsonLd` for structured data. Every content page should include appropriate JSON-LD.
+- **SEO components** in `components/seo/JsonLd.tsx` — use `ArticleJsonLd`, `WebSiteJsonLd` for structured data. Every content page should include appropriate JSON-LD.
 - **AI discoverability**: `llms.txt/route.ts` and `llms-full.txt/route.ts` are Next.js route handlers proxying to the backend's `/api/v1/ai/llms.txt` with static fallback.
 - **Styling**: Tailwind CSS with dark theme (bg-gray-950, text-gray-100). Use `cn()` from `lib/utils.ts` for conditional class merging (tailwind-merge). Two font variables: `--font-inter` (body) and `--font-jetbrains` (code). CSS classes: `cyber-card`, `cyber-input`, `cyber-textarea`, `cyber-btn`.
-- **TypeScript types** in `types/index.ts` — always use these interfaces (`Article`, `BlogPost`, `LearningResource`, `PaginatedResponse<T>`, `OwaspChecklistItem`, `OwaspChecklistResponse`) for API responses.
+- **TypeScript types** in `types/index.ts` — always use these interfaces (`Article`, `PaginatedResponse<T>`, `OwaspChecklistItem`, `OwaspChecklistResponse`) for API responses.
 
 ## Key Developer Commands
 

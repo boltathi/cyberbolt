@@ -37,6 +37,41 @@ body {
   .prose-cyber {
     @apply prose prose-invert max-w-none prose-headings:text-white prose-a:text-cyber-400 prose-a:no-underline hover:prose-a:underline prose-code:text-cyber-300 prose-pre:bg-gray-900 prose-pre:border prose-pre:border-white/10;
   }
+
+  /* TipTap editor styles */
+  .prose-cyber img {
+    @apply rounded-lg max-w-full mx-auto;
+  }
+
+  .prose-cyber table {
+    @apply w-full border-collapse border border-white/10;
+  }
+
+  .prose-cyber table th,
+  .prose-cyber table td {
+    @apply border border-white/10 px-3 py-2 text-left;
+  }
+
+  .prose-cyber table th {
+    @apply bg-gray-800 font-semibold;
+  }
+
+  .tiptap p.is-editor-empty:first-child::before {
+    color: #4b5563;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .tiptap {
+    outline: none;
+  }
+
+  .tiptap mark {
+    border-radius: 0.25em;
+    padding: 0.125em 0.25em;
+  }
 }
 
 /* Scrollbar */

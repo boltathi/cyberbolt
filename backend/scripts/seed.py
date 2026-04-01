@@ -25,8 +25,6 @@ if _env_path.exists():
 
 from app import create_app
 from app.services.article_service import ArticleService
-from app.services.blog_service import BlogService
-from app.services.learning_service import LearningService
 from app.services.auth_service import AuthService
 from app.extensions import redis_data
 
@@ -113,9 +111,6 @@ ARTICLES = [
         "meta_title": "Building Secure RAG Pipelines | CyberBolt",
         "meta_description": "Practical guide to securing Retrieval-Augmented Generation pipelines in production.",
     },
-]
-
-BLOG_POSTS = [
     {
         "title": "Why I Chose AI Security as a Career Path",
         "content": (
@@ -134,46 +129,12 @@ BLOG_POSTS = [
             "to break them. The OWASP Top 10 for LLMs is a great starting framework.</p>"
         ),
         "excerpt": "My journey from traditional cybersecurity to AI security, and why I believe this is the most exciting field in tech today.",
-        "category": "career",
+        "category": "Career & Productivity",
         "tags": ["career", "AI-security", "personal"],
         "status": "published",
-    },
-]
-
-LEARNING_RESOURCES = [
-    {
-        "title": "Prompt Injection CTF Challenges",
-        "description": "Hands-on capture-the-flag challenges focused on prompt injection techniques. Practice real attack scenarios in a safe environment.",
-        "category": "prompt-injection",
-        "resource_type": "ctf",
-        "difficulty": "intermediate",
-        "estimated_minutes": 120,
-        "external_url": "https://gandalf.lakera.ai",
-        "tags": ["CTF", "prompt-injection", "hands-on"],
-        "is_free": True,
-        "status": "published",
-    },
-    {
-        "title": "Introduction to LLM Security",
-        "description": "A comprehensive beginner-friendly guide to understanding security risks in large language model applications.",
-        "category": "llm-security",
-        "resource_type": "article",
-        "difficulty": "beginner",
-        "estimated_minutes": 30,
-        "tags": ["LLM", "security", "beginner"],
-        "is_free": True,
-        "status": "published",
-    },
-    {
-        "title": "AI Red Teaming: Advanced Techniques",
-        "description": "Deep dive into advanced red team methodologies for evaluating AI systems, including jailbreaking, model extraction, and adversarial attacks.",
-        "category": "ai-red-teaming",
-        "resource_type": "tutorial",
-        "difficulty": "advanced",
-        "estimated_minutes": 180,
-        "tags": ["red-team", "jailbreaking", "adversarial"],
-        "is_free": True,
-        "status": "published",
+        "is_featured": False,
+        "meta_title": "Why I Chose AI Security as a Career Path | CyberBolt",
+        "meta_description": "My journey from traditional cybersecurity to AI security, and why I believe this is the most exciting field in tech today.",
     },
 ]
 
@@ -184,11 +145,9 @@ LEARNING_RESOURCES = [
 
 def show_status():
     """Show current data counts."""
-    from app.models import get_articles_repo, get_blog_repo, get_learning_repo, get_users_repo
+    from app.models import get_articles_repo, get_users_repo
     print("\n📊 Current database contents (Redis DB 4):")
     print(f"   Articles:           {get_articles_repo().count()}")
-    print(f"   Blog posts:         {get_blog_repo().count()}")
-    print(f"   Learning resources: {get_learning_repo().count()}")
     print(f"   Users:              {get_users_repo().count()}")
     print()
 
@@ -218,32 +177,6 @@ def seed_articles():
         print(f"   ✅ Article: {article['title']}")
 
 
-def seed_blog_posts():
-    """Seed blog posts."""
-    from app.models import get_blog_repo
-    repo = get_blog_repo()
-    existing = repo.count()
-    if existing > 0:
-        print(f"   ⏭  Skipping blog posts ({existing} already exist)")
-        return
-    for data in BLOG_POSTS:
-        post = BlogService.create(data)
-        print(f"   ✅ Blog post: {post['title']}")
-
-
-def seed_learning_resources():
-    """Seed learning resources."""
-    from app.models import get_learning_repo
-    repo = get_learning_repo()
-    existing = repo.count()
-    if existing > 0:
-        print(f"   ⏭  Skipping learning resources ({existing} already exist)")
-        return
-    for data in LEARNING_RESOURCES:
-        resource = LearningService.create(data)
-        print(f"   ✅ Resource: {resource['title']}")
-
-
 def seed_admin():
     """Ensure admin user exists."""
     AuthService.ensure_admin_exists()
@@ -271,8 +204,6 @@ def main():
 
         seed_admin()
         seed_articles()
-        seed_blog_posts()
-        seed_learning_resources()
 
         print()
         show_status()

@@ -2,7 +2,6 @@
 from flask import current_app, request
 from flask_restx import Namespace, Resource, fields
 from ...services.article_service import ArticleService
-from ...services.learning_service import LearningService
 from ...services.owasp_service import OwaspService
 from ...utils.decorators import admin_required
 import bleach
@@ -30,23 +29,17 @@ class LlmsTxt(Resource):
         """Serve llms.txt — AI agent discovery file per llmstxt.org spec."""
         domain = current_app.config.get("DOMAIN", "cyberbolt.in")
         articles = ArticleService.get_all_for_ai()
-        categories = LearningService.get_categories()
 
         lines = [
             "# CyberBolt",
             "",
-            "> AI Security Learning Platform — Your hub for LLM security, prompt injection defense, adversarial ML, and enterprise cybersecurity.",
+            "> AI Security Platform — Your hub for LLM security, prompt injection defense, adversarial ML, and enterprise cybersecurity.",
             "",
             "## About",
             f"- [Website](https://{domain})",
             f"- [Articles](https://{domain}/articles): In-depth cybersecurity research",
-            f"- [Learning Hub](https://{domain}/learning): Structured AI security learning paths",
-            f"- [Blog](https://{domain}/blog): Lifestyle and career insights",
             "",
-            "## Topics",
         ]
-        for cat in categories:
-            lines.append(f"- {cat['icon']} {cat['name']}: {cat.get('description', '')}")
 
         if articles:
             lines.extend(["", "## Articles"])
@@ -74,15 +67,11 @@ class AIContent(Resource):
         """Structured JSON content for AI agents."""
         domain = current_app.config.get("DOMAIN", "cyberbolt.in")
         articles = ArticleService.get_all_for_ai()
-        categories = LearningService.get_categories()
-        paths = LearningService.get_paths()
 
         return {
             "name": "CyberBolt",
-            "description": "AI Security Learning Platform",
+            "description": "AI Security & Technology Platform",
             "url": f"https://{domain}",
-            "topics": [c["name"] for c in categories],
-            "learning_paths": paths,
             "articles": [
                 {
                     "title": a["title"],

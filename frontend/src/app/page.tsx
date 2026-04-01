@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Shield, BookOpen, Brain, Lock, Zap, ArrowRight } from "lucide-react";
+import { Shield, Brain, Lock, Zap, ArrowRight } from "lucide-react";
 import { articlesAPI } from "@/lib/api";
 import { Article } from "@/types";
 import { formatDate, truncate, CATEGORIES } from "@/lib/utils";
@@ -37,9 +37,6 @@ export default async function HomePage() {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <Link href="/articles" className="cyber-btn gap-2">
                 Read Articles <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link href="/learning" className="cyber-btn-outline gap-2">
-                <BookOpen className="h-4 w-4" /> Learning Hub
               </Link>
             </div>
           </div>
@@ -79,13 +76,13 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Learning Paths */}
+      {/* Focus Areas */}
       <section className="border-t border-white/5 bg-gray-900/30 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8 text-center">
-            <h2 className="text-2xl font-bold text-white">Learning Paths</h2>
+            <h2 className="text-2xl font-bold text-white">Focus Areas</h2>
             <p className="mt-2 text-gray-400">
-              Structured learning paths to master AI security concepts
+              Core areas of AI security research and practice
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
@@ -118,8 +115,8 @@ export default async function HomePage() {
             ))}
           </div>
           <div className="mt-8 text-center">
-            <Link href="/learning" className="cyber-btn-outline gap-2">
-              Explore All Paths <ArrowRight className="h-4 w-4" />
+            <Link href="/articles" className="cyber-btn-outline gap-2">
+              Explore Articles <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
@@ -152,8 +149,8 @@ export default async function HomePage() {
             Ready to Dive In?
           </h2>
           <p className="mt-4 text-gray-400">
-            Start exploring our comprehensive collection of articles and
-            learning resources on AI security.
+            Start exploring our comprehensive collection of articles
+            on AI security.
           </p>
           <div className="mt-6">
             <Link href="/articles" className="cyber-btn gap-2">

@@ -8,48 +8,11 @@ export interface Article {
   tags: string[];
   featured: boolean;
   published: boolean;
+  author?: string;
   meta_title?: string;
   meta_description?: string;
   og_image?: string;
   reading_time?: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  content: string;
-  excerpt: string;
-  tags: string[];
-  published: boolean;
-  meta_title?: string;
-  meta_description?: string;
-  og_image?: string;
-  reading_time?: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface LearningResource {
-  id: string;
-  title: string;
-  slug: string;
-  content: string;
-  excerpt: string;
-  description?: string;
-  category: string;
-  difficulty: "beginner" | "intermediate" | "advanced";
-  resource_type?: string;
-  estimated_minutes?: number;
-  external_url?: string;
-  is_free?: boolean;
-  tags: string[];
-  published: boolean;
-  order: number;
-  meta_title?: string;
-  meta_description?: string;
   created_at: string;
   updated_at: string;
 }
@@ -80,8 +43,6 @@ export interface User {
 
 export interface DashboardStats {
   articles: number;
-  blog_posts: number;
-  learning_resources: number;
 }
 
 export interface OwaspChecklistItem {

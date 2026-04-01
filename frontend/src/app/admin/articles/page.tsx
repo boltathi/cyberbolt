@@ -66,6 +66,7 @@ export default function AdminArticlesPage() {
           <thead>
             <tr className="border-b border-white/10 text-left text-gray-400">
               <th className="pb-3 font-medium">Title</th>
+              <th className="pb-3 font-medium">Author</th>
               <th className="pb-3 font-medium">Category</th>
               <th className="pb-3 font-medium">Status</th>
               <th className="pb-3 font-medium">Featured</th>
@@ -77,6 +78,7 @@ export default function AdminArticlesPage() {
             {filtered.map((article) => (
               <tr key={article.id}>
                 <td className="py-3 font-medium text-white">{article.title}</td>
+                <td className="py-3 text-gray-400">{article.author || "—"}</td>
                 <td className="py-3 text-gray-400">{article.category}</td>
                 <td className="py-3">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${article.published ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>

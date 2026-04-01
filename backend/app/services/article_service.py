@@ -77,6 +77,8 @@ class ArticleService:
         validated["title"] = sanitize_plain(validated.get("title", ""), 200)
         validated["meta_title"] = sanitize_plain(validated.get("meta_title", ""), 200)
         validated["meta_description"] = sanitize_plain(validated.get("meta_description", ""), 500)
+        if validated.get("author"):
+            validated["author"] = sanitize_plain(validated["author"], 100)
         if validated.get("slug"):
             validated["slug"] = sanitize_slug(validated["slug"])
         if validated.get("tags"):
@@ -102,6 +104,8 @@ class ArticleService:
             validated["meta_title"] = sanitize_plain(validated["meta_title"], 200)
         if "meta_description" in validated:
             validated["meta_description"] = sanitize_plain(validated["meta_description"], 500)
+        if "author" in validated:
+            validated["author"] = sanitize_plain(validated["author"], 100)
         if "slug" in validated:
             validated["slug"] = sanitize_slug(validated["slug"])
         if "tags" in validated:

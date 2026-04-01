@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Clock, Tag } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Tag, User } from "lucide-react";
 import { articlesAPI } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import { ArticleJsonLd } from "@/components/seo/JsonLd";
 import { SITE_URL } from "@/lib/utils";
+import CopyLinkButton from "@/components/ui/CopyLinkButton";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -24,6 +25,7 @@ export async function generateMetadata({
         type: "article",
         publishedTime: article.created_at,
         modifiedTime: article.updated_at,
+        ...(article.author ? { authors: [article.author] } : {}),
         images: article.og_image ? [article.og_image] : [],
       },
     };
@@ -64,13 +66,22 @@ export default async function ArticleDetailPage({
         </Link>
 
         <header className="mb-8">
-          <div className="mb-4 inline-flex rounded-full bg-cyber-400/10 px-3 py-1 text-sm font-medium text-cyber-400">
-            {article.category}
+          <div className="mb-4 flex items-center justify-between">
+            <div className="inline-flex rounded-full bg-cyber-400/10 px-3 py-1 text-sm font-medium text-cyber-400">
+              {article.category}
+            </div>
+            <CopyLinkButton url={`${SITE_URL}/articles/${article.slug}`} />
           </div>
           <h1 className="text-3xl font-bold text-white sm:text-4xl">
             {article.title}
           </h1>
           <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-400">
+            {article.author && (
+              <span className="flex items-center gap-1">
+                <User className="h-4 w-4" />
+                {article.author}
+              </span>
+            )}
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
               {formatDate(article.created_at)}

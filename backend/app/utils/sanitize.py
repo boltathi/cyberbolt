@@ -2,7 +2,7 @@
 import re
 import bleach
 
-# Tags allowed in article/blog content (Markdown-style HTML subset)
+# Tags allowed in article content (Markdown-style HTML subset)
 ALLOWED_TAGS = [
     "p", "br", "h1", "h2", "h3", "h4", "h5", "h6",
     "strong", "b", "em", "i", "u", "s", "del",
@@ -21,7 +21,7 @@ ALLOWED_ATTRIBUTES = {
     "th": ["colspan", "rowspan"],
 }
 
-ALLOWED_PROTOCOLS = ["http", "https", "mailto"]
+ALLOWED_PROTOCOLS = ["http", "https", "mailto", "data"]
 
 
 def sanitize_html(html: str) -> str:

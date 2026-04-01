@@ -26,7 +26,7 @@ export function truncate(str: string, length: number): string {
 export const SITE_NAME = "CyberBolt";
 export const SITE_URL = "https://cyberbolt.in";
 export const SITE_DESCRIPTION =
-  "AI Security Learning Hub, Technology Articles & Lifestyle Blog by CyberBolt";
+  "AI Security & Technology Articles by CyberBolt";
 
 export const CATEGORIES = [
   // Tech & Security
@@ -38,7 +38,7 @@ export const CATEGORIES = [
   "Privacy",
   "DevSecOps",
   "Threat Intelligence",
-  // Lifestyle & Learning
+  // Lifestyle
   "Health & Wellness",
   "Finance & Investing",
   "Life Hacks",
@@ -49,8 +49,4 @@ export const CATEGORIES = [
   "Tech Reviews",
 ];
 
-export const DIFFICULTY_COLORS: Record<string, string> = {
-  beginner: "bg-green-500/20 text-green-400",
-  intermediate: "bg-yellow-500/20 text-yellow-400",
-  advanced: "bg-red-500/20 text-red-400",
-};
+

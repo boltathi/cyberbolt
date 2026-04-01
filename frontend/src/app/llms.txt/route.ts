@@ -14,18 +14,15 @@ export async function GET() {
     }
   } catch {}
 
-  // Fallback
   const fallback = `# CyberBolt (cyberbolt.in)
 
-> AI Security Learning Hub, Technology Articles & Lifestyle Blog
+> AI Security & Technology Articles
 
 ## About
 CyberBolt is a platform dedicated to exploring the intersection of artificial intelligence and cybersecurity.
 
 ## Content
 - Articles: https://cyberbolt.in/articles
-- Learning Hub: https://cyberbolt.in/learning
-- Blog: https://cyberbolt.in/blog
 - About: https://cyberbolt.in/about
 
 ## API

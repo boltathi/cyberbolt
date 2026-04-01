@@ -1,7 +1,5 @@
 import type {
   Article,
-  BlogPost,
-  LearningResource,
   PaginatedResponse,
   AuthTokens,
   User,
@@ -63,23 +61,10 @@ function normalizeArticle(raw: any): Article {
     featured: raw.is_featured ?? raw.featured ?? false,
     published: raw.status ? raw.status === "published" : (raw.published ?? false),
     og_image: raw.featured_image ?? raw.og_image ?? "",
+    author: raw.author ?? "",
   };
 }
 
-function normalizeBlogPost(raw: any): BlogPost {
-  return {
-    ...raw,
-    published: raw.status ? raw.status === "published" : (raw.published ?? false),
-    og_image: raw.featured_image ?? raw.og_image ?? "",
-  };
-}
-
-function normalizeLearningResource(raw: any): LearningResource {
-  return {
-    ...raw,
-    published: raw.status ? raw.status === "published" : (raw.published ?? false),
-  };
-}
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 // Articles API
@@ -120,63 +105,6 @@ export const articlesAPI = {
   adminList: async (page = 1, per_page = 20) => {
     const data = await fetchAPI<{ articles: any[]; total: number; page: number; pages: number }>(`/articles/admin?page=${page}&per_page=${per_page}`);
     return { items: data.articles.map(normalizeArticle), total: data.total, page: data.page, per_page, total_pages: data.pages } as PaginatedResponse<Article>;
-  },
-};
-
-// Blog API
-export const blogAPI = {
-  list: async (page = 1, per_page = 12) => {
-    const data = await fetchServerAPI<{ posts: any[]; total: number; page: number; pages: number }>(`/blog?page=${page}&per_page=${per_page}`);
-    return { items: data.posts.map(normalizeBlogPost), total: data.total, page: data.page, per_page, total_pages: data.pages } as PaginatedResponse<BlogPost>;
-  },
-  get: async (slug: string) => {
-    const data = await fetchServerAPI<{ post: any }>(`/blog/${slug}`);
-    return normalizeBlogPost(data.post);
-  },
-
-  // Admin
-  create: async (data: Partial<BlogPost>) => {
-    const raw = await fetchAPI<any>("/blog/admin", { method: "POST", body: JSON.stringify(data) });
-    return normalizeBlogPost(raw.post ?? raw);
-  },
-  update: async (id: string, data: Partial<BlogPost>) => {
-    const raw = await fetchAPI<any>(`/blog/admin/${id}`, { method: "PUT", body: JSON.stringify(data) });
-    return normalizeBlogPost(raw.post ?? raw);
-  },
-  delete: (id: string) => fetchAPI<void>(`/blog/admin/${id}`, { method: "DELETE" }),
-  adminList: async (page = 1, per_page = 20) => {
-    const data = await fetchAPI<{ posts: any[]; total: number; page: number; pages: number }>(`/blog/admin?page=${page}&per_page=${per_page}`);
-    return { items: data.posts.map(normalizeBlogPost), total: data.total, page: data.page, per_page, total_pages: data.pages } as PaginatedResponse<BlogPost>;
-  },
-};
-
-// Learning API
-export const learningAPI = {
-  categories: () => fetchServerAPI<{ categories: Array<{ id: string; name: string; description: string; icon: string; count: number }> }>("/learning/categories"),
-  paths: () => fetchServerAPI<{ paths: Array<{ id: string; title: string; description: string; difficulty: string; estimated_hours: number; topics: string[] }> }>("/learning/paths"),
-  resources: async (category?: string) => {
-    const params = category ? `?category=${category}` : "";
-    const data = await fetchServerAPI<{ resources: any[]; total: number; page: number; pages: number }>(`/learning/resources${params}`);
-    return { items: data.resources.map(normalizeLearningResource), total: data.total, page: data.page, per_page: 20, total_pages: data.pages } as PaginatedResponse<LearningResource>;
-  },
-  get: async (id: string) => {
-    const data = await fetchServerAPI<{ resource: any }>(`/learning/resources/${id}`);
-    return normalizeLearningResource(data.resource);
-  },
-
-  // Admin
-  create: async (data: Partial<LearningResource>) => {
-    const raw = await fetchAPI<any>("/learning/admin", { method: "POST", body: JSON.stringify(data) });
-    return normalizeLearningResource(raw.resource ?? raw);
-  },
-  update: async (id: string, data: Partial<LearningResource>) => {
-    const raw = await fetchAPI<any>(`/learning/admin/${id}`, { method: "PUT", body: JSON.stringify(data) });
-    return normalizeLearningResource(raw.resource ?? raw);
-  },
-  delete: (id: string) => fetchAPI<void>(`/learning/admin/${id}`, { method: "DELETE" }),
-  adminList: async (page = 1, per_page = 20) => {
-    const data = await fetchAPI<{ resources: any[]; total: number; page: number; pages: number }>(`/learning/admin?page=${page}&per_page=${per_page}`);
-    return { items: data.resources.map(normalizeLearningResource), total: data.total, page: data.page, per_page, total_pages: data.pages } as PaginatedResponse<LearningResource>;
   },
 };
 

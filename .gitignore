@@ -50,6 +50,9 @@ Thumbs.db
 # Redis
 dump.rdb
 
+# Backups
+backups/
+
 # Logs
 *.log
 logs/

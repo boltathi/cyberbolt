@@ -21,6 +21,7 @@ export default function AdminArticleEditorPage() {
     excerpt: "",
     category: CATEGORIES[0],
     tags: "",
+    author: "",
     featured: false,
     published: false,
     meta_title: "",
@@ -48,6 +49,7 @@ export default function AdminArticleEditorPage() {
           excerpt: article.excerpt,
           category: article.category,
           tags: article.tags.join(", "),
+          author: article.author || "",
           featured: article.featured,
           published: article.published,
           meta_title: article.meta_title || "",
@@ -159,6 +161,16 @@ export default function AdminArticleEditorPage() {
                 placeholder="tag1, tag2, tag3"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-300">Author <span className="text-gray-500">(optional)</span></label>
+            <input
+              value={form.author}
+              onChange={(e) => setForm({ ...form, author: e.target.value })}
+              className="cyber-input"
+              placeholder="Author name"
+            />
           </div>
 
           <div className="flex gap-6">

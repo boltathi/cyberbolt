@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Shield, Github, Twitter, Linkedin, FileText } from "lucide-react";
+import { Shield, Twitter, Linkedin, FileText } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -24,8 +24,6 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li><Link href="/articles" className="hover:text-white transition-colors">Articles</Link></li>
-              <li><Link href="/learning" className="hover:text-white transition-colors">Learning Hub</Link></li>
-              <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
             </ul>
           </div>
 
@@ -47,13 +45,10 @@ export default function Footer() {
               Connect
             </h3>
             <div className="flex gap-3">
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
-                <Github className="h-5 w-5" />
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
+              <a href="https://x.com/securecyberbolt" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
+              <a href="https://www.linkedin.com/company/securecyberbolt" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
                 <Linkedin className="h-5 w-5" />
               </a>
             </div>
