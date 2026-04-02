@@ -3,13 +3,124 @@
 > A complete, beginner-friendly guide to understanding how CyberBolt works — from zero to production. This document explains every framework, pattern, and design decision so anyone can build a similar application.
 
 **Last updated:** April 2026  
-**Author:** Athithan Raj V  
+**Author:** Athithan Raj P 
 **Repository:** [github.com/boltathi/cyberbolt](https://github.com/boltathi/cyberbolt)
+
+---
+
+## Prerequisites — Learning Curve Checklist
+
+Before diving into this document, check off the skills you already have. Anything unchecked is what you should learn first. Each item includes a recommended free resource and the estimated time to get comfortable.
+
+### 🟢 Tier 1 — Absolute Fundamentals (Learn These First)
+
+> Without these, nothing below will make sense.
+
+- [ ] **How the Internet Works** — HTTP methods (GET, POST, PUT, DELETE), status codes (200, 404, 500), request/response cycle, headers, cookies
+  - 📚 [MDN: How the Web Works](https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web/How_the_Web_works) (~2 hours)
+- [ ] **HTML & CSS Basics** — Tags, attributes, box model, flexbox, responsive design
+  - 📚 [freeCodeCamp: Responsive Web Design](https://www.freecodecamp.org/learn/2022/responsive-web-design/) (~20 hours)
+- [ ] **JavaScript Fundamentals** — Variables, functions, arrays, objects, loops, `async/await`, Promises, `fetch()`, DOM manipulation
+  - 📚 [javascript.info](https://javascript.info/) — Parts 1 & 2 (~40 hours)
+- [ ] **Python Fundamentals** — Variables, functions, classes, dictionaries, lists, decorators, `import` system, virtual environments (`venv`)
+  - 📚 [Python Official Tutorial](https://docs.python.org/3/tutorial/) (~30 hours)
+- [ ] **Command Line / Terminal** — `cd`, `ls`, `mkdir`, `cat`, `grep`, pipes (`|`), environment variables, `$PATH`, package managers (`pip`, `npm`)
+  - 📚 [MIT: The Missing Semester — Shell](https://missing.csail.mit.edu/2020/course-shell/) (~3 hours)
+- [ ] **Git & GitHub** — `clone`, `add`, `commit`, `push`, `pull`, branches, merge conflicts, `.gitignore`
+  - 📚 [Git Handbook (GitHub)](https://docs.github.com/en/get-started/using-git) (~5 hours)
+
+### 🟡 Tier 2 — Backend Skills (Flask + Redis)
+
+> Required to understand how the CyberBolt API works.
+
+- [ ] **Python Decorators** — `@decorator` syntax, `functools.wraps`, writing custom decorators. Critical because Flask uses them everywhere (`@app.route`, `@admin_required()`)
+  - 📚 [RealPython: Primer on Decorators](https://realpython.com/primer-on-python-decorators/) (~3 hours)
+- [ ] **Flask Basics** — Routes, request/response objects, blueprints, `Flask(__name__)`, `app.run()`, `request.get_json()`, returning JSON
+  - 📚 [Flask Official Tutorial](https://flask.palletsprojects.com/en/stable/tutorial/) (~8 hours)
+- [ ] **REST API Design** — Resources, endpoints, CRUD mapping (GET=read, POST=create, PUT=update, DELETE=delete), JSON request/response bodies, status codes
+  - 📚 [RESTful API Design Guide](https://restfulapi.net/) (~4 hours)
+- [ ] **Redis Basics** — Key-value store concept, data types (String, Set, Sorted Set, Hash), `SET`, `GET`, `ZADD`, `ZRANGE`, `SADD`, `SMEMBERS`, TTL/expiry, `redis-cli`
+  - 📚 [Try Redis (interactive)](https://try.redis.io/) + [Redis University](https://university.redis.io/) (~6 hours)
+- [ ] **JSON** — Syntax, nesting, `json.dumps()` / `json.loads()` in Python, `JSON.parse()` / `JSON.stringify()` in JavaScript
+  - 📚 [MDN: Working with JSON](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/JSON) (~1 hour)
+- [ ] **Authentication Concepts** — Sessions vs tokens, hashing vs encryption, bcrypt, JWT structure (header.payload.signature), access vs refresh tokens, token blocklisting
+  - 📚 [JWT.io Introduction](https://jwt.io/introduction) + [Auth0: Token-Based Auth](https://auth0.com/learn/token-based-authentication-made-easy/) (~4 hours)
+- [ ] **Environment Variables** — What `.env` files are, `os.getenv()` in Python, `process.env` in Node.js, why secrets shouldn't be hardcoded
+  - 📚 [12-Factor App: Config](https://12factor.net/config) (~1 hour)
+
+### 🔵 Tier 3 — Frontend Skills (Next.js + React)
+
+> Required to understand how the CyberBolt website renders and interacts with users.
+
+- [ ] **React Basics** — Components, JSX, props, `useState`, `useEffect`, event handling, conditional rendering, lists/keys, component lifecycle
+  - 📚 [React Official Tutorial](https://react.dev/learn) (~15 hours)
+- [ ] **TypeScript Basics** — Types (`string`, `number`, `boolean`), interfaces, generics (`Array<T>`), type annotations on function params/returns, `type` vs `interface`
+  - 📚 [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html) (~10 hours)
+- [ ] **Next.js App Router** — File-based routing (`page.tsx`, `layout.tsx`), dynamic routes (`[slug]`), Server Components vs Client Components (`"use client"`), `generateMetadata()`, API route handlers (`route.ts`)
+  - 📚 [Next.js Official Docs — App Router](https://nextjs.org/docs/app) (~10 hours)
+- [ ] **Server-Side Rendering (SSR) vs Client-Side Rendering (CSR)** — Why SSR matters for SEO, how hydration works, when to use each approach
+  - 📚 [Next.js: Rendering Fundamentals](https://nextjs.org/docs/app/building-your-application/rendering) (~3 hours)
+- [ ] **Tailwind CSS** — Utility classes (`flex`, `p-4`, `text-white`, `bg-gray-900`), responsive prefixes (`md:`, `lg:`), dark mode, `@apply` directive, `tailwind.config.ts`
+  - 📚 [Tailwind CSS Docs](https://tailwindcss.com/docs) (~6 hours)
+- [ ] **Fetch API** — `fetch()`, headers, body, handling responses, error handling, `async/await` with fetch, difference between server-side and client-side fetching
+  - 📚 [MDN: Using Fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) (~2 hours)
+- [ ] **State Management Concept** — What global state is, why you need it (auth tokens), prop drilling problem, stores
+  - 📚 [Zustand GitHub README](https://github.com/pmndrs/zustand) (~2 hours)
+- [ ] **localStorage** — Browser storage API, `setItem`, `getItem`, `removeItem`, security implications (XSS exposure), when to use vs cookies
+  - 📚 [MDN: Web Storage API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API) (~1 hour)
+
+### 🟣 Tier 4 — DevOps & Deployment Skills
+
+> Required to understand how CyberBolt runs in production.
+
+- [ ] **Linux Server Basics** — SSH, `sudo`, `systemctl`, file permissions (`chmod`, `chown`), `screen` or `tmux` sessions, process management (`ps`, `kill`)
+  - 📚 [Linux Journey](https://linuxjourney.com/) (~10 hours)
+- [ ] **Nginx Basics** — Reverse proxy concept, `server` blocks, `location` directives, `proxy_pass`, SSL/TLS certificates, static file serving
+  - 📚 [Nginx Beginner's Guide](https://nginx.org/en/docs/beginners_guide.html) (~4 hours)
+- [ ] **DNS Basics** — A records, CNAME, how domains resolve to IP addresses, TTL, nameservers
+  - 📚 [Cloudflare: What is DNS?](https://www.cloudflare.com/learning/dns/what-is-dns/) (~2 hours)
+- [ ] **SSL/TLS & HTTPS** — Why HTTPS matters, certificates, Let's Encrypt, `certbot`, how TLS handshake works
+  - 📚 [Let's Encrypt: How It Works](https://letsencrypt.org/how-it-works/) (~2 hours)
+- [ ] **Process Managers** — Why servers need to keep running after SSH disconnects, `screen`, `tmux`, systemd services, Gunicorn workers
+  - 📚 [Gunicorn Docs](https://docs.gunicorn.org/en/stable/) (~3 hours)
+
+### 🔴 Tier 5 — Security & AI (Specialized)
+
+> Nice to have — makes you understand the security and AI features deeper.
+
+- [ ] **OWASP Top 10** — The 10 most critical web application security risks (Broken Access Control, Injection, XSS, CSRF, etc.)
+  - 📚 [OWASP Top 10 (2021)](https://owasp.org/www-project-top-ten/) (~5 hours)
+- [ ] **Web Security Basics** — XSS (Cross-Site Scripting), CSRF, SQL Injection, input sanitization, Content Security Policy, CORS
+  - 📚 [PortSwigger Web Security Academy](https://portswigger.net/web-security) (~20 hours, go at your own pace)
+- [ ] **LLM Basics** — What a Large Language Model is, prompting, tokens, temperature, local vs cloud inference, Ollama
+  - 📚 [Ollama Docs](https://ollama.com/) + [What are LLMs? (Google)](https://developers.google.com/machine-learning/resources/intro-llms) (~4 hours)
+- [ ] **SEO Fundamentals** — Meta tags, Open Graph, JSON-LD structured data, sitemaps, robots.txt, canonical URLs, why SSR helps SEO
+  - 📚 [Google SEO Starter Guide](https://developers.google.com/search/docs/fundamentals/seo-starter-guide) (~5 hours)
+
+### 📊 Self-Assessment Score
+
+Count your checkmarks per tier and see where you stand:
+
+| Tier | Skills | Your Score | Ready? |
+|------|--------|-----------|--------|
+| 🟢 Tier 1 — Fundamentals | 6 items | __ / 6 | Need **5+** to proceed |
+| 🟡 Tier 2 — Backend | 7 items | __ / 7 | Need **5+** for backend sections |
+| 🔵 Tier 3 — Frontend | 8 items | __ / 8 | Need **6+** for frontend sections |
+| 🟣 Tier 4 — DevOps | 5 items | __ / 5 | Need **3+** for deployment section |
+| 🔴 Tier 5 — Security & AI | 4 items | __ / 4 | Optional, enhances understanding |
+| **Total** | **30 items** | **__ / 30** | |
+
+**Recommended minimum to read this document effectively: 19 / 30** (all of Tier 1 + most of Tier 2 + most of Tier 3)
+
+**Estimated total learning time if starting from zero: ~200 hours** (8–12 weeks at 2–3 hours/day)
+
+> 💡 **Tip:** You don't need to complete everything before reading this document. Learn a tier, then read the corresponding sections. Go back and forth — theory + seeing real code is the fastest way to learn.
 
 ---
 
 ## Table of Contents
 
+0. [Prerequisites — Learning Curve Checklist](#prerequisites--learning-curve-checklist)
 1. [What Is CyberBolt?](#1-what-is-cyberbolt)
 2. [Architecture Overview](#2-architecture-overview)
 3. [Backend — Flask (Python)](#3-backend--flask-python)
