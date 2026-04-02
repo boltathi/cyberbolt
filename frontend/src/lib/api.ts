@@ -116,11 +116,11 @@ export const authAPI = {
       body: JSON.stringify({ username, password }),
     }),
   refresh: (refreshToken: string) =>
-    fetchAPI<{ access_token: string }>("/auth/refresh", {
+    fetchAPI<{ access_token: string; refresh_token: string }>("/auth/refresh", {
       method: "POST",
       headers: { Authorization: `Bearer ${refreshToken}` },
     }),
-  logout: () => fetchAPI<void>("/auth/logout", { method: "POST" }),
+  logout: () => fetchAPI<void>("/auth/logout", { method: "DELETE" }),
   me: () => fetchAPI<User>("/auth/me"),
 };
 

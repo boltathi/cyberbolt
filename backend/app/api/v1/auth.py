@@ -53,24 +53,37 @@ class Login(Resource):
 class Refresh(Resource):
     @jwt_required(refresh=True)
     def post(self):
-        """Refresh access token."""
+        """Refresh access token and rotate refresh token."""
         identity = get_jwt_identity()
         claims = get_jwt()
+        old_jti = claims["jti"]
+
+        # Blocklist the old refresh token (rotation)
+        if redis_jwt:
+            redis_jwt.set(f"blocklist:{old_jti}", "1", ex=604800)
+
+        additional_claims = {"role": claims.get("role", "user")}
         access_token = create_access_token(
             identity=identity,
-            additional_claims={"role": claims.get("role", "user")},
+            additional_claims=additional_claims,
         )
-        return {"access_token": access_token}
+        refresh_token = create_refresh_token(
+            identity=identity,
+            additional_claims=additional_claims,
+        )
+        return {"access_token": access_token, "refresh_token": refresh_token}
 
 
 @ns.route("/logout")
 class Logout(Resource):
-    @jwt_required()
+    @jwt_required(verify_type=False)
     def delete(self):
-        """Logout — add token to blocklist."""
+        """Logout — blocklist both access and refresh tokens."""
         jti = get_jwt()["jti"]
+        token_type = get_jwt()["type"]
+        ttl = 604800 if token_type == "refresh" else 3600
         if redis_jwt:
-            redis_jwt.set(f"blocklist:{jti}", "1", ex=3600)
+            redis_jwt.set(f"blocklist:{jti}", "1", ex=ttl)
         return {"message": "Successfully logged out"}
 
 
