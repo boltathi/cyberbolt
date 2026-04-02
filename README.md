@@ -57,6 +57,8 @@
 - 📩 **Newsletter Signup** — Email subscription form (inline variant at end of articles + compact footer variant), backed by Redis storage with rate limiting and duplicate detection
 - 🖼️ **Dynamic OG Images** — Auto-generated Open Graph images at `/og/[slug]` via Next.js `ImageResponse` (edge runtime, 1200×630) with category badge, title, and branding
 - 🔗 **Canonical URLs** — Proper `rel="canonical"` and Twitter card metadata on all article pages
+- 📋 **Code Copy Button** — One-click copy button on all code blocks in articles, with visual feedback
+- 🔀 **Related Articles** — Auto-suggested related articles at the bottom of each article page, based on category with fallback to latest
 
 ### AI Tools
 - 🛡️ **OWASP Top 10 Checklist Generator** — Admin-only tool at `/tools/owasp-checklist`. User inputs app name + type, local LLM generates tailored security recommendations for each OWASP Top 10 category. Hybrid architecture: OWASP data hardcoded in Python, LLM only generates contextual recommendations.
@@ -262,6 +264,7 @@ cyberbolt/
 │   │       ├── decorators.py    # @admin_required()
 │   │       └── sanitize.py      # HTML/input sanitization
 │   ├── scripts/seed.py          # Sample data seeder
+│   ├── scripts/seed_articles.py  # Cybersecurity article seeder (10 articles)
 │   ├── tests/
 │   │   ├── conftest.py          # Fixtures (client, auth_headers)
 │   │   └── test_api.py          # API integration tests
@@ -293,7 +296,9 @@ cyberbolt/
 │   │   │   ├── article/
 │   │   │   │   ├── ShareButtons.tsx   # Social share (Twitter, LinkedIn, Reddit, HN, copy)
 │   │   │   │   ├── TableOfContents.tsx # Sticky TOC with scroll spy
-│   │   │   │   └── NewsletterCTA.tsx # Newsletter signup (inline + footer)
+│   │   │   │   ├── NewsletterCTA.tsx # Newsletter signup (inline + footer)
+│   │   │   │   ├── CodeCopyButton.tsx # Copy button for code blocks
+│   │   │   │   └── RelatedArticles.tsx # Related articles suggestions
 │   │   │   ├── editor/
 │   │   │   │   └── RichTextEditor.tsx # TipTap WYSIWYG editor + image upload
 │   │   │   ├── ui/
@@ -359,6 +364,9 @@ cyberbolt/
 - [x] Newsletter signup (inline + footer, Redis backend)
 - [x] Dynamic OG image generation (edge runtime)
 - [x] Canonical URLs and Twitter card metadata
+- [x] Code copy button on all code blocks
+- [x] Related articles section on article pages
+- [x] 10 seeded cybersecurity articles (AI security, OWASP, SQLi, XSS, Linux, Nmap, LLM red teaming, career guide, AWS, Burp Suite)
 - [ ] Comments system
 - [ ] Analytics dashboard
 - [ ] CI/CD pipeline (GitHub Actions)

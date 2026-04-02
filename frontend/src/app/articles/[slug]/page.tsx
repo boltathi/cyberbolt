@@ -8,6 +8,8 @@ import { SITE_URL } from "@/lib/utils";
 import ShareButtons from "@/components/article/ShareButtons";
 import TableOfContents from "@/components/article/TableOfContents";
 import NewsletterCTA from "@/components/article/NewsletterCTA";
+import CodeCopyButton from "@/components/article/CodeCopyButton";
+import RelatedArticles from "@/components/article/RelatedArticles";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -141,6 +143,14 @@ export default async function ArticleDetailPage({
             <div
               className="prose-cyber"
               dangerouslySetInnerHTML={{ __html: article.content }}
+            />
+            <CodeCopyButton />
+
+            {/* Related articles */}
+            <RelatedArticles
+              currentSlug={article.slug}
+              category={article.category}
+              tags={article.tags || []}
             />
 
             {/* Bottom share buttons */}
