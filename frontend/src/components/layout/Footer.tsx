@@ -1,9 +1,15 @@
 import Link from "next/link";
-import { Shield, Twitter, Linkedin, FileText } from "lucide-react";
+import { Shield, Twitter, Linkedin, FileText, Rss, Github } from "lucide-react";
+import { NewsletterCTA } from "@/components/article/NewsletterCTA";
 
 export default function Footer() {
   return (
     <footer className="border-t border-white/10 bg-gray-950">
+      {/* Newsletter section */}
+      <div className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
+        <NewsletterCTA variant="footer" />
+      </div>
+
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           {/* Brand */}
@@ -24,6 +30,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li><Link href="/articles" className="hover:text-white transition-colors">Articles</Link></li>
+              <li><Link href="/rss.xml" className="hover:text-white transition-colors flex items-center gap-1"><Rss className="h-3 w-3" /> RSS Feed</Link></li>
             </ul>
           </div>
 
@@ -45,6 +52,9 @@ export default function Footer() {
               Connect
             </h3>
             <div className="flex gap-3">
+              <a href="https://github.com/boltathi" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
+                <Github className="h-5 w-5" />
+              </a>
               <a href="https://x.com/securecyberbolt" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>

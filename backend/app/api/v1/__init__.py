@@ -19,6 +19,7 @@ from .articles import ns as articles_ns
 from .ai import ns as ai_ns
 from .contact import ns as contact_ns
 from .upload import ns as upload_ns
+from .newsletter import ns as newsletter_ns
 
 api.add_namespace(health_ns)
 api.add_namespace(auth_ns)
@@ -26,3 +27,4 @@ api.add_namespace(articles_ns)
 api.add_namespace(ai_ns)
 api.add_namespace(contact_ns)
 api.add_namespace(upload_ns)
+api.add_namespace(newsletter_ns)
