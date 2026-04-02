@@ -59,6 +59,7 @@
 - 🔗 **Canonical URLs** — Proper `rel="canonical"` and Twitter card metadata on all article pages
 - 📋 **Code Copy Button** — One-click copy button on all code blocks in articles, with visual feedback
 - 🔀 **Related Articles** — Auto-suggested related articles at the bottom of each article page, based on category with fallback to latest
+- 🤖 **Download JSON for LLM** — One-click download of any article as clean JSON (title, content as plaintext, metadata). Feed into ChatGPT, Claude, or any LLM for summaries, analysis, or study notes
 
 ### AI Tools
 - 🛡️ **OWASP Top 10 Checklist Generator** — Admin-only tool at `/tools/owasp-checklist`. User inputs app name + type, local LLM generates tailored security recommendations for each OWASP Top 10 category. Hybrid architecture: OWASP data hardcoded in Python, LLM only generates contextual recommendations.
@@ -264,7 +265,6 @@ cyberbolt/
 │   │       ├── decorators.py    # @admin_required()
 │   │       └── sanitize.py      # HTML/input sanitization
 │   ├── scripts/seed.py          # Sample data seeder
-│   ├── scripts/seed_articles.py  # Cybersecurity article seeder (10 articles)
 │   ├── tests/
 │   │   ├── conftest.py          # Fixtures (client, auth_headers)
 │   │   └── test_api.py          # API integration tests
@@ -298,7 +298,8 @@ cyberbolt/
 │   │   │   │   ├── TableOfContents.tsx # Sticky TOC with scroll spy
 │   │   │   │   ├── NewsletterCTA.tsx # Newsletter signup (inline + footer)
 │   │   │   │   ├── CodeCopyButton.tsx # Copy button for code blocks
-│   │   │   │   └── RelatedArticles.tsx # Related articles suggestions
+│   │   │   │   ├── RelatedArticles.tsx # Related articles suggestions
+│   │   │   │   └── DownloadArticleJson.tsx # Download article as JSON for LLM
 │   │   │   ├── editor/
 │   │   │   │   └── RichTextEditor.tsx # TipTap WYSIWYG editor + image upload
 │   │   │   ├── ui/
@@ -366,7 +367,7 @@ cyberbolt/
 - [x] Canonical URLs and Twitter card metadata
 - [x] Code copy button on all code blocks
 - [x] Related articles section on article pages
-- [x] 10 seeded cybersecurity articles (AI security, OWASP, SQLi, XSS, Linux, Nmap, LLM red teaming, career guide, AWS, Burp Suite)
+- [x] Download article as JSON for LLM consumption
 - [ ] Comments system
 - [ ] Analytics dashboard
 - [ ] CI/CD pipeline (GitHub Actions)

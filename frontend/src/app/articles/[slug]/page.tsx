@@ -10,6 +10,7 @@ import TableOfContents from "@/components/article/TableOfContents";
 import NewsletterCTA from "@/components/article/NewsletterCTA";
 import CodeCopyButton from "@/components/article/CodeCopyButton";
 import RelatedArticles from "@/components/article/RelatedArticles";
+import DownloadArticleJson from "@/components/article/DownloadArticleJson";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -134,9 +135,10 @@ export default async function ArticleDetailPage({
                 </div>
               )}
 
-              {/* Share buttons */}
-              <div className="mt-6">
+              {/* Share buttons + Download JSON */}
+              <div className="mt-6 flex flex-wrap items-center gap-3">
                 <ShareButtons url={articleUrl} title={article.title} />
+                <DownloadArticleJson article={article} url={articleUrl} />
               </div>
             </header>
 
