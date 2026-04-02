@@ -45,13 +45,18 @@
 | **Auth** | JWT (access + refresh) with Redis blocklist (DB 3) |
 | **AI/LLM** | Ollama + Qwen2.5-0.5B (local, CPU-only, ~398 MB) |
 | **Deployment** | Contabo VPS, Nginx, screen sessions |
-| **SEO** | JSON-LD, Dynamic Sitemap, robots.txt, llms.txt |
+| **SEO** | JSON-LD, Dynamic Sitemap, robots.txt, llms.txt, RSS 2.0, Dynamic OG Images, Canonical URLs |
 
 ## Features
 
 ### Content
-- 📝 **Articles** — Tech & security articles plus lifestyle content (Health, Finance, Travel, Life Hacks, etc.) with 16 categories, tags, search, pagination, optional author field, and copy-link sharing
+- 📝 **Articles** — AI security & technology articles with 10 security-focused categories, tags, search, pagination, optional author field, and social share buttons (Twitter, LinkedIn, Reddit, HN)
+- 📑 **Table of Contents** — Auto-generated sticky TOC sidebar on article pages with IntersectionObserver scroll spy, only shows for articles with 3+ headings
 - 🔍 **Search** — Full-text search across articles with real-time results and search bar UI
+- 📡 **RSS Feed** — RSS 2.0 feed at `/rss.xml` with Atom self-link and 1-hour caching
+- 📩 **Newsletter Signup** — Email subscription form (inline variant at end of articles + compact footer variant), backed by Redis storage with rate limiting and duplicate detection
+- 🖼️ **Dynamic OG Images** — Auto-generated Open Graph images at `/og/[slug]` via Next.js `ImageResponse` (edge runtime, 1200×630) with category badge, title, and branding
+- 🔗 **Canonical URLs** — Proper `rel="canonical"` and Twitter card metadata on all article pages
 
 ### AI Tools
 - 🛡️ **OWASP Top 10 Checklist Generator** — Admin-only tool at `/tools/owasp-checklist`. User inputs app name + type, local LLM generates tailored security recommendations for each OWASP Top 10 category. Hybrid architecture: OWASP data hardcoded in Python, LLM only generates contextual recommendations.
@@ -139,6 +144,7 @@ cd backend && source venv/bin/activate && python -m pytest tests/ -v
 | GET | `/api/v1/ai/content` | All articles as JSON |
 | GET | `/api/v1/ai/articles/<slug>.md` | Article as markdown |
 | GET | `/api/v1/upload/image/<id>` | Serve uploaded image |
+| POST | `/api/v1/newsletter/subscribe` | Subscribe to newsletter |
 
 ### Auth
 | Method | Endpoint | Description |
@@ -250,7 +256,8 @@ cyberbolt/
 │   │   │   ├── articles.py      # Public + admin article endpoints
 │   │   │   ├── ai.py            # llms.txt, AI content, OWASP generator
 │   │   │   ├── upload.py        # Image upload/serve (Redis-stored)
-│   │   │   └── contact.py       # Contact form (SMTP)
+│   │   │   ├── contact.py       # Contact form (SMTP)
+│   │   │   └── newsletter.py    # Newsletter subscribe (Redis-stored)
 │   │   └── utils/
 │   │       ├── decorators.py    # @admin_required()
 │   │       └── sanitize.py      # HTML/input sanitization
@@ -271,6 +278,8 @@ cyberbolt/
 │   │   │   ├── about/page.tsx       # About page
 │   │   │   ├── contact/page.tsx     # Contact form
 │   │   │   ├── articles/            # Article list + search + [slug] detail
+│   │   │   ├── og/[slug]/route.tsx  # Dynamic OG image generation (edge)
+│   │   │   ├── rss.xml/route.ts     # RSS 2.0 feed
 │   │   │   ├── tools/
 │   │   │   │   └── owasp-checklist/page.tsx  # OWASP generator (admin-only)
 │   │   │   ├── admin/
@@ -281,19 +290,23 @@ cyberbolt/
 │   │   │   ├── llms.txt/route.ts        # Proxy to backend
 │   │   │   └── llms-full.txt/route.ts   # Proxy to backend
 │   │   ├── components/
+│   │   │   ├── article/
+│   │   │   │   ├── ShareButtons.tsx   # Social share (Twitter, LinkedIn, Reddit, HN, copy)
+│   │   │   │   ├── TableOfContents.tsx # Sticky TOC with scroll spy
+│   │   │   │   └── NewsletterCTA.tsx # Newsletter signup (inline + footer)
 │   │   │   ├── editor/
 │   │   │   │   └── RichTextEditor.tsx # TipTap WYSIWYG editor + image upload
 │   │   │   ├── ui/
-│   │   │   │   └── CopyLinkButton.tsx # Copy-to-clipboard button
+│   │   │   │   └── CopyLinkButton.tsx # Copy-to-clipboard button (legacy)
 │   │   │   ├── layout/
 │   │   │   │   ├── Header.tsx       # Nav bar (5 links incl. Tools)
-│   │   │   │   └── Footer.tsx       # Site footer
+│   │   │   │   └── Footer.tsx       # Site footer (newsletter, RSS, GitHub)
 │   │   │   └── seo/
 │   │   │       └── JsonLd.tsx       # Structured data components
 │   │   ├── lib/
 │   │   │   ├── api.ts           # fetchAPI, fetchServerAPI, all API clients
 │   │   │   ├── store.ts         # Zustand auth store
-│   │   │   └── utils.ts         # cn() helper, CATEGORIES, utilities
+│   │   │   └── utils.ts         # cn(), CATEGORIES (10), readingTime(), utilities
 │   │   └── types/
 │   │       └── index.ts         # TypeScript interfaces
 │   ├── next.config.ts
@@ -337,7 +350,15 @@ cyberbolt/
 - [x] Optional author field on articles
 - [x] Copy link button on article detail page
 - [x] Migration manager (`migrate.sh`) — backup, audit, migrate, rollback, cleanup
-- [ ] Email newsletter integration
+- [x] RSS 2.0 feed (`/rss.xml`)
+- [x] Active nav highlighting with `usePathname`
+- [x] Security-focused categories (10, removed lifestyle)
+- [x] About page rewrite with real identity
+- [x] Social share buttons (Twitter, LinkedIn, Reddit, HN)
+- [x] Table of Contents sidebar with scroll spy
+- [x] Newsletter signup (inline + footer, Redis backend)
+- [x] Dynamic OG image generation (edge runtime)
+- [x] Canonical URLs and Twitter card metadata
 - [ ] Comments system
 - [ ] Analytics dashboard
 - [ ] CI/CD pipeline (GitHub Actions)
