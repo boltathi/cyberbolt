@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Shield, Twitter, Linkedin, FileText, Rss, Github } from "lucide-react";
-import { NewsletterCTA } from "@/components/article/NewsletterCTA";
+import NewsletterCTA from "@/components/article/NewsletterCTA";
 
 export default function Footer() {
   return (
