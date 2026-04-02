@@ -61,7 +61,7 @@
 - 🔐 **Authentication** — JWT-based login with admin role
 - 📊 **Dashboard** — Content statistics and quick actions
 - ✏️ **CRUD** — Full create/read/update/delete for articles with optional author field
-- 📝 **Rich Text Editor** — Enterprise-grade TipTap WYSIWYG editor with headings (H1-H3), bold/italic/underline/strikethrough, text alignment, bullet & ordered lists, blockquote, inline code, code blocks with syntax highlighting (Lowlight), links, image upload (max 2 MB, stored in Redis), tables (add/remove rows/columns), text color, highlight, undo/redo, and floating bubble menu
+- 📝 **Rich Text Editor** — Enterprise-grade TipTap WYSIWYG editor with headings (H1-H3), bold/italic/underline/strikethrough, text alignment, bullet & ordered lists, blockquote, inline code, code blocks with syntax highlighting (Lowlight), links, image upload (max 2 MB, stored in Redis), tables (add/remove rows/columns), text color, highlight, undo/redo, floating bubble menu, and **HTML source mode** toggle for pasting raw HTML
 - 🖼️ **Image Upload** — Admin-only image upload endpoint (`POST /api/v1/upload/image`). Images up to 2 MB stored as base64 in Redis, served via `GET /api/v1/upload/image/<id>` with immutable caching
 - 🏷️ **SEO Fields** — Custom meta titles, descriptions, and OG images per content item
 

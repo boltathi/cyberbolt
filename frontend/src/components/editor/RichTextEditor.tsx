@@ -49,6 +49,7 @@ import {
   Columns2,
   Rows2,
   Palette,
+  FileCode,
 } from "lucide-react";
 
 const lowlight = createLowlight(common);
@@ -107,6 +108,8 @@ export default function RichTextEditor({
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState("");
+  const [htmlMode, setHtmlMode] = useState(false);
+  const [htmlSource, setHtmlSource] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const ic = "h-4 w-4";
 
@@ -410,6 +413,28 @@ export default function RichTextEditor({
               </ToolbarBtn>
             </>
           )}
+
+          <Sep />
+
+          {/* HTML Source toggle */}
+          <ToolbarBtn
+            onClick={() => {
+              if (htmlMode) {
+                // Switching from HTML → WYSIWYG: apply HTML source to editor
+                editor.commands.setContent(htmlSource, { emitUpdate: false });
+                onChange(editor.getHTML());
+                setHtmlMode(false);
+              } else {
+                // Switching from WYSIWYG → HTML: populate textarea with current HTML
+                setHtmlSource(editor.getHTML());
+                setHtmlMode(true);
+              }
+            }}
+            active={htmlMode}
+            title={htmlMode ? "Switch to Visual Editor" : "Edit HTML Source"}
+          >
+            <FileCode className={ic} />
+          </ToolbarBtn>
         </div>
 
         {/* Link URL bar */}
@@ -443,42 +468,65 @@ export default function RichTextEditor({
         )}
       </div>
 
-      {/* Bubble menu for quick formatting on text selection */}
-      {editor && (
-        <BubbleMenu editor={editor} className="flex items-center gap-0.5 rounded-lg border border-white/10 bg-gray-800 px-1 py-0.5 shadow-xl">
-          <ToolbarBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold">
-            <Bold className="h-3.5 w-3.5" />
-          </ToolbarBtn>
-          <ToolbarBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Italic">
-            <Italic className="h-3.5 w-3.5" />
-          </ToolbarBtn>
-          <ToolbarBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Underline">
-            <UnderlineIcon className="h-3.5 w-3.5" />
-          </ToolbarBtn>
-          <ToolbarBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} title="Strikethrough">
-            <Strikethrough className="h-3.5 w-3.5" />
-          </ToolbarBtn>
-          <div className="mx-0.5 h-4 w-px bg-white/10" />
-          <ToolbarBtn
-            onClick={() => {
-              if (editor.isActive("link")) { editor.chain().focus().unsetLink().run(); }
-              else { const url = window.prompt("Enter URL:"); if (url) editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run(); }
+      {htmlMode ? (
+        /* HTML Source editing mode */
+        <>
+          <textarea
+            value={htmlSource}
+            onChange={(e) => {
+              setHtmlSource(e.target.value);
+              onChange(e.target.value);
             }}
-            active={editor.isActive("link")} title="Link"
-          >
-            <Link2 className="h-3.5 w-3.5" />
-          </ToolbarBtn>
-        </BubbleMenu>
+            className="min-h-[20rem] w-full bg-gray-950 px-4 py-3 font-mono text-sm text-green-400 placeholder-gray-600 focus:outline-none"
+            placeholder="Paste your HTML content here..."
+            spellCheck={false}
+          />
+          <div className="flex items-center justify-between border-t border-white/10 px-3 py-1.5 text-xs text-gray-500">
+            <span className="text-amber-400">HTML Source Mode — paste HTML then click the &lt;/&gt; button to preview</span>
+            <span>{htmlSource.length} chars</span>
+          </div>
+        </>
+      ) : (
+        /* WYSIWYG mode */
+        <>
+          {/* Bubble menu for quick formatting on text selection */}
+          {editor && (
+            <BubbleMenu editor={editor} className="flex items-center gap-0.5 rounded-lg border border-white/10 bg-gray-800 px-1 py-0.5 shadow-xl">
+              <ToolbarBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold">
+                <Bold className="h-3.5 w-3.5" />
+              </ToolbarBtn>
+              <ToolbarBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Italic">
+                <Italic className="h-3.5 w-3.5" />
+              </ToolbarBtn>
+              <ToolbarBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Underline">
+                <UnderlineIcon className="h-3.5 w-3.5" />
+              </ToolbarBtn>
+              <ToolbarBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} title="Strikethrough">
+                <Strikethrough className="h-3.5 w-3.5" />
+              </ToolbarBtn>
+              <div className="mx-0.5 h-4 w-px bg-white/10" />
+              <ToolbarBtn
+                onClick={() => {
+                  if (editor.isActive("link")) { editor.chain().focus().unsetLink().run(); }
+                  else { const url = window.prompt("Enter URL:"); if (url) editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run(); }
+                }}
+                active={editor.isActive("link")} title="Link"
+              >
+                <Link2 className="h-3.5 w-3.5" />
+              </ToolbarBtn>
+            </BubbleMenu>
+          )}
+
+          {/* Editor content */}
+          <EditorContent editor={editor} />
+
+          {/* Status bar */}
+          <div className="flex items-center justify-between border-t border-white/10 px-3 py-1.5 text-xs text-gray-500">
+            <span>Rich text editor · Images up to 2MB</span>
+            <span>{editor.getText().length} chars</span>
+          </div>
+        </>
       )}
-
-      {/* Editor content */}
-      <EditorContent editor={editor} />
-
-      {/* Status bar */}
-      <div className="flex items-center justify-between border-t border-white/10 px-3 py-1.5 text-xs text-gray-500">
-        <span>Rich text editor · Images up to 2MB</span>
-        <span>{editor.getText().length} chars</span>
-      </div>
     </div>
   );
 }
