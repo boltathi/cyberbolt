@@ -42,7 +42,7 @@
 | **Backend** | Flask 3.1, Flask-RESTX, Gunicorn 23, Marshmallow |
 | **State** | Zustand 5 (client), Redis 7 (server) |
 | **Storage** | Redis DB 4 — all data stored as JSON via `RedisRepository` |
-| **Auth** | JWT (access + refresh) with Redis blocklist (DB 3) |
+| **Auth** | JWT (access 1h + refresh 7d) with token rotation, Redis blocklist (DB 3) |
 | **AI/LLM** | Ollama + Qwen2.5-0.5B (local, CPU-only, ~398 MB) |
 | **Deployment** | Contabo VPS, Nginx, screen sessions |
 | **SEO** | JSON-LD, Dynamic Sitemap, robots.txt, llms.txt, RSS 2.0, Dynamic OG Images, Canonical URLs |
@@ -76,7 +76,7 @@
 ### Infrastructure
 - ⚡ **Redis** — 5 databases (DB 0 cache, DB 1 sessions, DB 2 rate-limits, DB 3 JWT blocklist, DB 4 data storage)
 - 🧠 **Ollama** — Local LLM server running Qwen2.5-0.5B (~600 MB RAM), auto-unloads after 5 min idle
-- 🔒 **Security** — Rate limiting, CORS, HSTS, CSP headers, bcrypt, JWT auth, input sanitization (bleach), 5 MB request limit, Marshmallow validation
+- 🔒 **Security** — Rate limiting, CORS, HSTS, CSP headers, bcrypt, JWT auth with refresh token rotation, input sanitization (bleach), 5 MB request limit, Marshmallow validation
 - 📈 **Scalable** — Gunicorn workers, standalone Next.js, horizontal scaling ready
 
 ## Quick Start
@@ -152,9 +152,9 @@ cd backend && source venv/bin/activate && python -m pytest tests/ -v
 ### Auth
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/auth/login` | Login (returns JWT) |
-| POST | `/api/v1/auth/refresh` | Refresh access token |
-| POST | `/api/v1/auth/logout` | Logout (blocklist token) |
+| POST | `/api/v1/auth/login` | Login (returns access + refresh JWT) |
+| POST | `/api/v1/auth/refresh` | Refresh tokens (rotates refresh token) |
+| DELETE | `/api/v1/auth/logout` | Logout (blocklists both tokens) |
 | GET | `/api/v1/auth/me` | Current user info |
 
 ### Admin (Requires JWT + admin role)
@@ -322,6 +322,7 @@ cyberbolt/
 ├── migrate.sh                   # Data migration manager (backup/audit/migrate/rollback/cleanup)
 ├── install-ollama.sh            # Ollama + model installer
 ├── backups/                     # Redis RDB + JSON backups (gitignored)
+├── research.md                  # Comprehensive technical documentation for newbies
 ├── .env.example
 └── README.md
 ```
@@ -368,6 +369,8 @@ cyberbolt/
 - [x] Code copy button on all code blocks
 - [x] Related articles section on article pages
 - [x] Download article as JSON for LLM consumption
+- [x] JWT security hardening (refresh token rotation, dual blocklisting, 7d refresh TTL)
+- [x] Comprehensive research.md documentation for newbie developers
 - [ ] Comments system
 - [ ] Analytics dashboard
 - [ ] CI/CD pipeline (GitHub Actions)
