@@ -8,7 +8,6 @@ import { Shield, Menu, X } from "lucide-react";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/articles", label: "Articles" },
-  { href: "/glossary", label: "Glossary" },
   { href: "/tools", label: "Tools" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },

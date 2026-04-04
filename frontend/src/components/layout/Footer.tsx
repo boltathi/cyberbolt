@@ -30,6 +30,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li><Link href="/articles" className="hover:text-white transition-colors">Articles</Link></li>
+              <li><Link href="/glossary" className="hover:text-white transition-colors">Glossary</Link></li>
               <li><Link href="/rss.xml" className="hover:text-white transition-colors flex items-center gap-1"><Rss className="h-3 w-3" /> RSS Feed</Link></li>
             </ul>
           </div>
