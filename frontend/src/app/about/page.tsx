@@ -70,9 +70,8 @@ const teamMembers = [
 const faqItems = [
   { q: "What is CyberBolt?", a: "CyberBolt is an independent cybersecurity education platform focused on AI security. We publish hands-on articles, provide tools like the OWASP Checklist Generator, and make complex security topics accessible to everyone." },
   { q: "Is CyberBolt free to use?", a: "Yes, 100%. All articles, tools, and resources on CyberBolt are completely free. We believe cybersecurity education should be accessible to everyone." },
-  { q: "What tech stack does CyberBolt use?", a: "Flask (Python) for the backend API, Next.js 15 with React 19 for the frontend, Redis as the sole database, and Ollama for local LLM inference. Everything runs on a single Contabo VPS — no cloud dependencies." },
   { q: "How can I contribute?", a: "Reach out via our Contact page or connect with us on LinkedIn. We welcome article suggestions, bug reports, and collaboration ideas from the community." },
-  { q: "Does CyberBolt track users?", a: "No. We don't use analytics cookies or third-party trackers. Our LLM runs locally via Ollama, so your data never leaves our server." },
+  { q: "Does CyberBolt track users?", a: "No. We don't use analytics cookies or third-party trackers." },
 ];
 
 export default function AboutPage() {
