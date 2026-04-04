@@ -894,6 +894,8 @@ CyberBolt relies on RDB snapshots. If Redis crashes between snapshots, you may l
 
 Ollama runs **Large Language Models locally** on your server. No API keys, no cloud costs, no data leaving your machine.
 
+> **⚠️ CRITICAL RULE:** Any feature that calls Ollama (or any LLM) must be **admin-only** — both at the API level (`@admin_required()` decorator) and at the UI level (frontend auth check). LLM endpoints must never be publicly accessible. They consume significant server resources (CPU, RAM) and could be abused for denial-of-service or prompt injection attacks if exposed without authentication.
+
 ### How CyberBolt Uses Ollama
 
 **OWASP Checklist Generator** — the only AI-powered feature:

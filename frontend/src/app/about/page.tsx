@@ -1,23 +1,17 @@
 import {
   Shield, Code, Brain, Zap, ExternalLink, Twitter, Linkedin,
-  ArrowRight, BookOpen, Layers, Heart, Eye, Users,
+  ArrowRight, Heart, Eye,
 } from "lucide-react";
 import Link from "next/link";
 import { PersonJsonLd } from "@/components/seo/JsonLd";
 import type { Metadata } from "next";
 import FaqAccordion from "./FaqAccordion";
+import AboutStats from "./AboutStats";
 
 export const metadata: Metadata = {
   title: "About",
   description: "Athithan Raj P & Pavithra Mohan — AI security researchers and the team behind CyberBolt. Spreading cybersecurity education in a simplified, real-time way.",
 };
-
-const stats = [
-  { label: "Articles Published", value: "12+", icon: BookOpen },
-  { label: "Categories Covered", value: "10", icon: Layers },
-  { label: "Team Members", value: "2", icon: Users },
-  { label: "Open Source", value: "100%", icon: Code },
-];
 
 const values = [
   { icon: Code, title: "Open Source", desc: "Our entire stack is transparent. No black boxes, no vendor lock-in. Learn from the code itself." },
@@ -84,7 +78,7 @@ export default function AboutPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white sm:text-4xl">
-                Meet the Team
+                About Us
               </h1>
               <p className="mt-2 text-lg text-cyber-400 font-medium">
                 AI Security Researchers & Full-Stack Developers
@@ -107,18 +101,8 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Platform Stats */}
-        <section className="mb-16">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {stats.map((stat) => (
-              <div key={stat.label} className="rounded-xl border border-white/10 bg-gray-900/50 p-5 text-center group hover:border-cyber-400/30 transition-colors">
-                <stat.icon className="mx-auto mb-2 h-5 w-5 text-cyber-400 group-hover:scale-110 transition-transform" />
-                <div className="text-2xl font-bold text-white">{stat.value}</div>
-                <div className="mt-1 text-xs text-gray-500 uppercase tracking-wider">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* Platform Stats (admin-only) */}
+        <AboutStats />
 
         {/* Team Members */}
         <section className="mb-16">
