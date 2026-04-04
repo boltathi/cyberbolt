@@ -1,5 +1,7 @@
-"""CVE Feed service — fetch recent CVEs from public APIs."""
+"""CVE Feed service — fetch AI/ML-related CVEs from NVD API v2."""
 import json
+import os
+import time
 import requests
 from datetime import datetime, timezone, timedelta
 from ..extensions import redis_data
@@ -11,22 +13,45 @@ CISA_KEV_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_v
 # NVD API v2
 NVD_API_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 
-CACHE_KEY = "cve_feed:cache"
-CACHE_TTL = 3600  # 1 hour
+# NVD API key (50 req/30s with key vs 5 req/30s without)
+NVD_API_KEY = os.getenv("NVD_API_KEY", "")
+
+CACHE_KEY = "cve_feed:ai_cache"
+CACHE_TTL = 604800  # 7 days
+
+# AI/ML keyword phrases for NVD keywordSearch queries.
+# Each is searched against CVE descriptions via the NVD API.
+AI_KEYWORDS = [
+    "artificial intelligence",
+    "machine learning",
+    "large language model",
+    "deep learning",
+    "neural network",
+    "generative AI",
+    "prompt injection",
+    "model poisoning",
+    "adversarial machine learning",
+    "tensorflow",
+    "pytorch",
+    "langchain",
+    "hugging face",
+    "openai",
+    "chatbot",
+    "natural language processing",
+]
 
 
 class CVEService:
-    """Fetches and caches recent CVEs from public sources."""
+    """Fetches and caches AI/ML-related CVEs from NVD."""
 
     @staticmethod
     def get_recent_cves(limit: int = 20) -> dict:
-        """Get recent CVEs. Uses Redis cache to avoid hammering APIs."""
+        """Get recent AI/ML CVEs. Uses 7-day Redis cache."""
         # Check cache first
         cached = redis_data.get(CACHE_KEY)
         if cached:
             try:
                 data = json.loads(cached)
-                # Slice to requested limit
                 data["cves"] = data["cves"][:limit]
                 data["total"] = len(data["cves"])
                 return data
@@ -34,7 +59,7 @@ class CVEService:
                 pass
 
         # Fetch fresh data
-        cves = CVEService._fetch_nvd_recent(limit=50)
+        cves = CVEService._fetch_ai_cves()
         kev_ids = CVEService._fetch_kev_ids()
 
         # Mark KEV status
@@ -45,10 +70,10 @@ class CVEService:
             "cves": cves,
             "total": len(cves),
             "updated_at": datetime.now(timezone.utc).isoformat(),
-            "source": "NVD (National Vulnerability Database)",
+            "source": "NVD (National Vulnerability Database) — AI/ML filtered",
         }
 
-        # Cache the full result
+        # Cache the full result for 7 days
         try:
             redis_data.setex(CACHE_KEY, CACHE_TTL, json.dumps(result))
         except Exception:
@@ -60,91 +85,124 @@ class CVEService:
         return result
 
     @staticmethod
-    def _fetch_nvd_recent(limit: int = 50) -> list[dict]:
-        """Fetch recent CVEs from NVD API v2."""
-        try:
-            # Get CVEs from the last 7 days
-            now = datetime.now(timezone.utc)
-            week_ago = now - timedelta(days=7)
+    def _fetch_ai_cves() -> list[dict]:
+        """Fetch AI/ML-related CVEs using NVD keywordSearch param.
 
-            params = {
-                "pubStartDate": week_ago.strftime("%Y-%m-%dT00:00:00.000"),
-                "pubEndDate": now.strftime("%Y-%m-%dT23:59:59.999"),
-                "resultsPerPage": min(limit, 50),
-            }
+        Makes one API call per keyword (with API key for 50 req/30s limit).
+        Uses a 30-day lookback window so the 7-day cache always has data.
+        Deduplicates results by CVE ID.
+        """
+        all_cves: dict[str, dict] = {}  # CVE ID -> parsed dict
 
-            resp = requests.get(NVD_API_URL, params=params, timeout=15, headers={
-                "User-Agent": "CyberBolt/1.0 (cyberbolt.in)"
-            })
-            resp.raise_for_status()
-            data = resp.json()
+        now = datetime.now(timezone.utc)
+        month_ago = now - timedelta(days=30)
 
-            cves = []
-            for item in data.get("vulnerabilities", [])[:limit]:
-                cve_data = item.get("cve", {})
-                cve_id = cve_data.get("id", "")
+        headers = {"User-Agent": "CyberBolt/1.0 (cyberbolt.in)"}
+        if NVD_API_KEY:
+            headers["apiKey"] = NVD_API_KEY
 
-                # Get English description
-                descriptions = cve_data.get("descriptions", [])
-                description = ""
-                for d in descriptions:
-                    if d.get("lang") == "en":
-                        description = d.get("value", "")
-                        break
+        for keyword in AI_KEYWORDS:
+            try:
+                params = {
+                    "keywordSearch": keyword,
+                    "pubStartDate": month_ago.strftime("%Y-%m-%dT00:00:00.000"),
+                    "pubEndDate": now.strftime("%Y-%m-%dT23:59:59.999"),
+                    "resultsPerPage": 50,
+                }
 
-                # Get CVSS score
-                metrics = cve_data.get("metrics", {})
-                cvss_score = None
-                cvss_severity = "UNKNOWN"
-                cvss_vector = ""
+                resp = requests.get(
+                    NVD_API_URL, params=params, timeout=20, headers=headers
+                )
+                resp.raise_for_status()
+                data = resp.json()
 
-                # Try CVSS v3.1 first, then v3.0, then v2.0
-                for version_key in ["cvssMetricV31", "cvssMetricV30", "cvssMetricV2"]:
-                    metric_list = metrics.get(version_key, [])
-                    if metric_list:
-                        cvss_data = metric_list[0].get("cvssData", {})
-                        cvss_score = cvss_data.get("baseScore")
-                        cvss_severity = metric_list[0].get("baseSeverity", cvss_data.get("baseSeverity", "UNKNOWN"))
-                        cvss_vector = cvss_data.get("vectorString", "")
-                        break
+                for item in data.get("vulnerabilities", []):
+                    parsed = CVEService._parse_cve(item)
+                    if parsed and parsed["id"] not in all_cves:
+                        all_cves[parsed["id"]] = parsed
 
-                # Get references
-                references = []
-                for ref in cve_data.get("references", [])[:3]:
-                    references.append({
-                        "url": ref.get("url", ""),
-                        "source": ref.get("source", ""),
-                    })
+                # Polite delay between NVD API calls
+                time.sleep(2)
 
-                # Get published date
-                published = cve_data.get("published", "")
+            except Exception:
+                continue  # Skip failed keyword, try next
 
-                # Get weaknesses (CWE)
-                weaknesses = []
-                for w in cve_data.get("weaknesses", []):
-                    for d in w.get("description", []):
-                        if d.get("lang") == "en":
-                            weaknesses.append(d.get("value", ""))
-
-                cves.append({
-                    "id": cve_id,
-                    "description": description[:500],
-                    "cvss_score": cvss_score,
-                    "cvss_severity": cvss_severity.upper() if cvss_severity else "UNKNOWN",
-                    "cvss_vector": cvss_vector,
-                    "published": published,
-                    "references": references,
-                    "weaknesses": weaknesses[:3],
-                    "in_kev": False,
-                    "nvd_url": f"https://nvd.nist.gov/vuln/detail/{cve_id}",
-                })
-
-            # Sort by published date (newest first)
-            cves.sort(key=lambda x: x.get("published", ""), reverse=True)
-            return cves
-
-        except Exception:
+        if not all_cves:
             return CVEService._get_fallback_cves()
+
+        # Sort by published date (newest first)
+        return sorted(
+            all_cves.values(),
+            key=lambda x: x.get("published", ""),
+            reverse=True,
+        )
+
+    @staticmethod
+    def _parse_cve(item: dict) -> dict | None:
+        """Parse a single CVE item from NVD API response."""
+        try:
+            cve_data = item.get("cve", {})
+            cve_id = cve_data.get("id", "")
+            if not cve_id:
+                return None
+
+            # English description
+            description = ""
+            for d in cve_data.get("descriptions", []):
+                if d.get("lang") == "en":
+                    description = d.get("value", "")
+                    break
+
+            # CVSS score — try v3.1, then v3.0, then v2.0
+            metrics = cve_data.get("metrics", {})
+            cvss_score = None
+            cvss_severity = "UNKNOWN"
+            cvss_vector = ""
+
+            for version_key in ["cvssMetricV31", "cvssMetricV30", "cvssMetricV2"]:
+                metric_list = metrics.get(version_key, [])
+                if metric_list:
+                    cvss_data = metric_list[0].get("cvssData", {})
+                    cvss_score = cvss_data.get("baseScore")
+                    cvss_severity = metric_list[0].get(
+                        "baseSeverity",
+                        cvss_data.get("baseSeverity", "UNKNOWN"),
+                    )
+                    cvss_vector = cvss_data.get("vectorString", "")
+                    break
+
+            # References (first 3)
+            references = [
+                {"url": ref.get("url", ""), "source": ref.get("source", "")}
+                for ref in cve_data.get("references", [])[:3]
+            ]
+
+            # Published date
+            published = cve_data.get("published", "")
+
+            # Weaknesses (CWE)
+            weaknesses = []
+            for w in cve_data.get("weaknesses", []):
+                for d in w.get("description", []):
+                    if d.get("lang") == "en":
+                        weaknesses.append(d.get("value", ""))
+
+            return {
+                "id": cve_id,
+                "description": description[:500],
+                "cvss_score": cvss_score,
+                "cvss_severity": (
+                    cvss_severity.upper() if cvss_severity else "UNKNOWN"
+                ),
+                "cvss_vector": cvss_vector,
+                "published": published,
+                "references": references,
+                "weaknesses": weaknesses[:3],
+                "in_kev": False,
+                "nvd_url": f"https://nvd.nist.gov/vuln/detail/{cve_id}",
+            }
+        except Exception:
+            return None
 
     @staticmethod
     def _fetch_kev_ids() -> set:
@@ -161,42 +219,42 @@ class CVEService:
 
     @staticmethod
     def _get_fallback_cves() -> list[dict]:
-        """Return fallback data when APIs are unreachable."""
+        """Return AI/ML-related fallback CVEs when NVD API is unreachable."""
         return [
             {
-                "id": "CVE-2024-3094",
-                "description": "Malicious code was discovered in the upstream tarballs of xz-utils, starting with version 5.6.0. The backdoor manipulated the build process via a series of complex obfuscations to inject code into the liblzma library, targeting the sshd authentication process.",
-                "cvss_score": 10.0,
-                "cvss_severity": "CRITICAL",
-                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
-                "published": "2024-03-29T17:15:00.000",
-                "references": [{"url": "https://nvd.nist.gov/vuln/detail/CVE-2024-3094", "source": "nvd.nist.gov"}],
-                "weaknesses": ["CWE-506"],
-                "in_kev": True,
-                "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-3094",
-            },
-            {
-                "id": "CVE-2024-21762",
-                "description": "An out-of-bound write vulnerability in Fortinet FortiOS allows a remote unauthenticated attacker to execute arbitrary code or command via specially crafted HTTP requests.",
+                "id": "CVE-2024-5480",
+                "description": "A critical remote code execution vulnerability in PyTorch TorchServe allows attackers to execute arbitrary code by sending specially crafted model inference requests that bypass input validation in the management API.",
                 "cvss_score": 9.8,
                 "cvss_severity": "CRITICAL",
                 "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-                "published": "2024-02-09T10:15:00.000",
-                "references": [{"url": "https://nvd.nist.gov/vuln/detail/CVE-2024-21762", "source": "nvd.nist.gov"}],
-                "weaknesses": ["CWE-787"],
-                "in_kev": True,
-                "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-21762",
+                "published": "2024-06-06T19:15:00.000",
+                "references": [{"url": "https://nvd.nist.gov/vuln/detail/CVE-2024-5480", "source": "nvd.nist.gov"}],
+                "weaknesses": ["CWE-77"],
+                "in_kev": False,
+                "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-5480",
             },
             {
-                "id": "CVE-2023-44487",
-                "description": "The HTTP/2 protocol allows a denial of service (server resource consumption) because request cancellation can reset many streams quickly, causing asymmetric resource consumption known as 'Rapid Reset'.",
-                "cvss_score": 7.5,
+                "id": "CVE-2024-34359",
+                "description": "llama-cpp-python, a Python binding for llama.cpp, is vulnerable to a Jinja2 Server-Side Template Injection that allows remote code execution via crafted chat templates in GGUF model metadata.",
+                "cvss_score": 9.8,
+                "cvss_severity": "CRITICAL",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "published": "2024-06-06T18:15:00.000",
+                "references": [{"url": "https://nvd.nist.gov/vuln/detail/CVE-2024-34359", "source": "nvd.nist.gov"}],
+                "weaknesses": ["CWE-1336"],
+                "in_kev": False,
+                "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-34359",
+            },
+            {
+                "id": "CVE-2024-3660",
+                "description": "A arbitrary code execution vulnerability in TensorFlow Keras model loading allows attackers to execute arbitrary Python code when a user loads a maliciously crafted .keras model file via Lambda layers.",
+                "cvss_score": 8.1,
                 "cvss_severity": "HIGH",
-                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-                "published": "2023-10-10T14:15:00.000",
-                "references": [{"url": "https://nvd.nist.gov/vuln/detail/CVE-2023-44487", "source": "nvd.nist.gov"}],
-                "weaknesses": ["CWE-400"],
-                "in_kev": True,
-                "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2023-44487",
+                "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N",
+                "published": "2024-04-16T00:15:00.000",
+                "references": [{"url": "https://nvd.nist.gov/vuln/detail/CVE-2024-3660", "source": "nvd.nist.gov"}],
+                "weaknesses": ["CWE-94"],
+                "in_kev": False,
+                "nvd_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-3660",
             },
         ]

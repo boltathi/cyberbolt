@@ -65,7 +65,7 @@
 
 ### AI Tools
 - 🛡️ **OWASP Top 10 Checklist Generator** — Admin-only tool at `/tools/owasp-checklist`. User inputs app name + type, local LLM generates tailored security recommendations for each OWASP Top 10 category. Hybrid architecture: OWASP data hardcoded in Python, LLM only generates contextual recommendations.
-- 🔴 **CVE Threat Feed** — Live vulnerability feed at `/tools/cve-feed` from the National Vulnerability Database (NVD). Shows recent CVEs with CVSS severity scores, CISA KEV status, CWE weakness IDs, and references. 1-hour Redis cache.
+- 🔴 **AI/ML CVE Threat Feed** — AI & machine learning vulnerability feed at `/tools/cve-feed` from the National Vulnerability Database (NVD). Filtered for AI/ML-related CVEs using 16 keyword categories (TensorFlow, PyTorch, LangChain, prompt injection, etc.). Shows CVSS severity scores, CISA KEV status, CWE weakness IDs, and references. 7-day Redis cache, daily refresh, 30-day lookback window. Authenticated via NVD API key.
 - 🧰 **Tools Index** — Landing page at `/tools` listing all available security tools with descriptions and access requirements.
 - 🤖 **Agentic AI** — `llms.txt` / `llms-full.txt` endpoints for AI agent discovery per [llmstxt.org](https://llmstxt.org) spec.
 
@@ -362,6 +362,7 @@ cyberbolt/
 | `REDIS_DATA_URL` | Redis data store (DB 4) | `redis://localhost:6379/4` |
 | `OLLAMA_URL` | Ollama API URL | `http://localhost:11434` |
 | `OLLAMA_MODEL` | LLM model name | `qwen2.5:0.5b` |
+| `NVD_API_KEY` | NVD API key for CVE feed (50 req/30s) | (empty) |
 | `DOMAIN` | Site domain | `cyberbolt.in` |
 | `CORS_ORIGINS` | Allowed CORS origins | `http://localhost:3000` |
 | `NEXT_PUBLIC_API_URL` | Frontend → backend URL | `http://localhost:5000` |

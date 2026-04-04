@@ -20,12 +20,12 @@ const tools = [
     access: "Admin login required",
   },
   {
-    title: "CVE Threat Feed",
+    title: "AI/ML CVE Threat Feed",
     description:
-      "Live vulnerability feed from the National Vulnerability Database (NVD). See the latest CVEs with CVSS severity scores and CISA Known Exploited Vulnerabilities (KEV) status.",
+      "AI & machine learning vulnerability feed from the National Vulnerability Database (NVD). See the latest AI-related CVEs with CVSS severity scores and CISA KEV status. Updated daily.",
     href: "/tools/cve-feed",
     icon: AlertTriangle,
-    badge: "Live Feed",
+    badge: "AI/ML Feed",
     badgeColor: "bg-red-400/10 text-red-400 border-red-400/30",
     access: "Public — no login needed",
   },
