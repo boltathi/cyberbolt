@@ -4,6 +4,8 @@ import type {
   AuthTokens,
   User,
   OwaspChecklistResponse,
+  GlossaryTerm,
+  CVEFeedResponse,
 } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -62,6 +64,7 @@ function normalizeArticle(raw: any): Article {
     published: raw.status ? raw.status === "published" : (raw.published ?? false),
     og_image: raw.featured_image ?? raw.og_image ?? "",
     author: raw.author ?? "",
+    difficulty: raw.difficulty ?? "beginner",
   };
 }
 
@@ -69,9 +72,10 @@ function normalizeArticle(raw: any): Article {
 
 // Articles API
 export const articlesAPI = {
-  list: async (page = 1, per_page = 12, category?: string) => {
+  list: async (page = 1, per_page = 12, category?: string, difficulty?: string) => {
     const params = new URLSearchParams({ page: String(page), per_page: String(per_page) });
     if (category) params.set("category", category);
+    if (difficulty) params.set("difficulty", difficulty);
     const data = await fetchServerAPI<{ articles: any[]; total: number; page: number; pages: number }>(`/articles?${params}`);
     return { items: data.articles.map(normalizeArticle), total: data.total, page: data.page, per_page, total_pages: data.pages } as PaginatedResponse<Article>;
   },
@@ -151,4 +155,25 @@ export const newsletterAPI = {
       method: "POST",
       body: JSON.stringify({ subject, body }),
     }),
+};
+
+// Glossary API (public)
+export const glossaryAPI = {
+  list: async (query?: string, category?: string) => {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (category) params.set("category", category);
+    const qs = params.toString();
+    return fetchServerAPI<{ terms: GlossaryTerm[]; total: number; categories: { name: string; count: number }[] }>(`/glossary${qs ? `?${qs}` : ""}`);
+  },
+  get: async (slug: string) => {
+    return fetchServerAPI<{ term: GlossaryTerm }>(`/glossary/${slug}`);
+  },
+};
+
+// CVE Feed API (public)
+export const cveAPI = {
+  recent: async (limit = 20) => {
+    return fetchServerAPI<CVEFeedResponse>(`/cve/recent?limit=${limit}`);
+  },
 };

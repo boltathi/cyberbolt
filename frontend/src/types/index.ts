@@ -9,6 +9,7 @@ export interface Article {
   featured: boolean;
   published: boolean;
   author?: string;
+  difficulty?: "beginner" | "intermediate" | "advanced";
   meta_title?: string;
   meta_description?: string;
   og_image?: string;
@@ -60,4 +61,31 @@ export interface OwaspChecklistResponse {
   app_type: string;
   checklist: OwaspChecklistItem[];
   generated_at: string;
+}
+
+export interface GlossaryTerm {
+  term: string;
+  slug: string;
+  definition: string;
+  category: string;
+}
+
+export interface CVEEntry {
+  id: string;
+  description: string;
+  cvss_score: number | null;
+  cvss_severity: string;
+  cvss_vector: string;
+  published: string;
+  references: { url: string; source: string }[];
+  weaknesses: string[];
+  in_kev: boolean;
+  nvd_url: string;
+}
+
+export interface CVEFeedResponse {
+  cves: CVEEntry[];
+  total: number;
+  updated_at: string;
+  source: string;
 }

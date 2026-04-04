@@ -13,6 +13,7 @@ class ArticleCreateSchema(Schema):
     status = fields.Str(load_default="draft")
     is_featured = fields.Bool(load_default=False)
     author = fields.Str(load_default="")
+    difficulty = fields.Str(load_default="beginner")
     meta_title = fields.Str(load_default="")
     meta_description = fields.Str(load_default="")
     featured_image = fields.Str(load_default="")
@@ -27,6 +28,10 @@ class ArticleCreateSchema(Schema):
             data["featured_image"] = data.pop("og_image")
         if "title" in data and "slug" not in data:
             data["slug"] = slugify(data["title"])
+        # Validate difficulty
+        valid_difficulties = ("beginner", "intermediate", "advanced")
+        if data.get("difficulty") and data["difficulty"] not in valid_difficulties:
+            data["difficulty"] = "beginner"
         return data
 
 
@@ -40,6 +45,7 @@ class ArticleUpdateSchema(Schema):
     status = fields.Str()
     is_featured = fields.Bool()
     author = fields.Str()
+    difficulty = fields.Str()
     meta_title = fields.Str()
     meta_description = fields.Str()
     featured_image = fields.Str()
@@ -69,6 +75,7 @@ class ArticleResponseSchema(Schema):
     is_featured = fields.Bool()
     views = fields.Int()
     author = fields.Str()
+    difficulty = fields.Str()
     meta_title = fields.Str()
     meta_description = fields.Str()
     featured_image = fields.Str()

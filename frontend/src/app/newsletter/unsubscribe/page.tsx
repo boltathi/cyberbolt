@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Mail, Check, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
-export default function UnsubscribePage() {
+function UnsubscribeContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
@@ -76,5 +76,22 @@ export default function UnsubscribePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function UnsubscribePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto flex min-h-[60vh] max-w-md items-center justify-center px-4">
+          <div className="w-full rounded-xl border border-white/10 bg-gray-900/50 p-8 text-center">
+            <Mail className="mx-auto mb-4 h-8 w-8 animate-pulse text-cyber-400" />
+            <p className="text-gray-400">Processing your request...</p>
+          </div>
+        </div>
+      }
+    >
+      <UnsubscribeContent />
+    </Suspense>
   );
 }

@@ -9,7 +9,7 @@ from ..utils.sanitize import sanitize_html, sanitize_plain, sanitize_tags, sanit
 class ArticleService:
 
     @staticmethod
-    def get_all(page=1, per_page=12, category=None, tag=None, status="published"):
+    def get_all(page=1, per_page=12, category=None, tag=None, status="published", difficulty=None):
         repo = get_articles_repo()
         filters = {}
         if status:
@@ -28,6 +28,11 @@ class ArticleService:
         # Filter by tag if provided
         if tag:
             articles = [a for a in articles if tag in a.get("tags", [])]
+            total = len(articles)
+
+        # Filter by difficulty if provided
+        if difficulty:
+            articles = [a for a in articles if a.get("difficulty", "beginner") == difficulty]
             total = len(articles)
 
         return articles, total

@@ -50,10 +50,12 @@
 ## Features
 
 ### Content
-- 📝 **Articles** — AI security & technology articles with 10 security-focused categories, tags, search, pagination, optional author field, and social share buttons (Twitter, LinkedIn, Reddit, HN)
+- 📝 **Articles** — AI security & technology articles with 10 security-focused categories, tags, search, pagination, optional author field, difficulty levels (beginner/intermediate/advanced), and social share buttons (Twitter, LinkedIn, Reddit, HN)
 - 📑 **Table of Contents** — Auto-generated sticky TOC sidebar on article pages with IntersectionObserver scroll spy, only shows for articles with 3+ headings
 - 🔍 **Search** — Full-text search across articles with real-time results and search bar UI
+- 🎯 **Difficulty Levels** — Articles tagged as beginner, intermediate, or advanced with color-coded badges and filter support on the articles page
 - 📡 **RSS Feed** — RSS 2.0 feed at `/rss.xml` with Atom self-link and 1-hour caching
+- 📖 **Cybersecurity Glossary** — 60+ cybersecurity terms at `/glossary` with definitions, categories, search, alphabetical navigation, and category filtering. Hardcoded in Python — no Redis needed.
 - 📩 **Newsletter Signup** — Email subscription form (inline variant at end of articles + compact footer variant), backed by Redis storage with rate limiting and duplicate detection
 - 🖼️ **Dynamic OG Images** — Auto-generated Open Graph images at `/og/[slug]` via Next.js `ImageResponse` (edge runtime, 1200×630) with category badge, title, and branding
 - 🔗 **Canonical URLs** — Proper `rel="canonical"` and Twitter card metadata on all article pages
@@ -63,6 +65,8 @@
 
 ### AI Tools
 - 🛡️ **OWASP Top 10 Checklist Generator** — Admin-only tool at `/tools/owasp-checklist`. User inputs app name + type, local LLM generates tailored security recommendations for each OWASP Top 10 category. Hybrid architecture: OWASP data hardcoded in Python, LLM only generates contextual recommendations.
+- 🔴 **CVE Threat Feed** — Live vulnerability feed at `/tools/cve-feed` from the National Vulnerability Database (NVD). Shows recent CVEs with CVSS severity scores, CISA KEV status, CWE weakness IDs, and references. 1-hour Redis cache.
+- 🧰 **Tools Index** — Landing page at `/tools` listing all available security tools with descriptions and access requirements.
 - 🤖 **Agentic AI** — `llms.txt` / `llms-full.txt` endpoints for AI agent discovery per [llmstxt.org](https://llmstxt.org) spec.
 
 ### Admin Panel
@@ -149,6 +153,9 @@ cd backend && source venv/bin/activate && python -m pytest tests/ -v
 | GET | `/api/v1/upload/image/<id>` | Serve uploaded image |
 | POST | `/api/v1/newsletter/subscribe` | Subscribe to newsletter |
 | GET | `/api/v1/newsletter/unsubscribe` | Unsubscribe (token-verified) |
+| GET | `/api/v1/glossary` | List glossary terms (filter by q=, category=) |
+| GET | `/api/v1/glossary/<slug>` | Get glossary term by slug |
+| GET | `/api/v1/cve/recent` | Recent CVEs from NVD (limit= param) |
 
 ### Auth
 | Method | Endpoint | Description |
@@ -254,6 +261,8 @@ cyberbolt/
 │   │   ├── services/
 │   │   │   ├── auth_service.py      # JWT auth + admin bootstrap
 │   │   │   ├── article_service.py   # Article CRUD + search
+│   │   │   ├── cve_service.py       # CVE feed from NVD + CISA KEV
+│   │   │   ├── glossary_service.py  # 60+ cybersecurity terms (hardcoded)
 │   │   │   ├── newsletter_service.py # Newsletter send + unsubscribe tokens
 │   │   │   └── owasp_service.py     # OWASP checklist + Ollama LLM
 │   │   ├── api/v1/
@@ -262,6 +271,8 @@ cyberbolt/
 │   │   │   ├── auth.py          # Login/logout/refresh/me
 │   │   │   ├── articles.py      # Public + admin article endpoints
 │   │   │   ├── ai.py            # llms.txt, AI content, OWASP generator
+│   │   │   ├── cve.py           # CVE threat feed endpoints
+│   │   │   ├── glossary.py      # Glossary endpoints
 │   │   │   ├── upload.py        # Image upload/serve (Redis-stored)
 │   │   │   ├── contact.py       # Contact form (SMTP)
 │   │   │   └── newsletter.py    # Newsletter subscribe/unsubscribe/admin send
@@ -286,13 +297,16 @@ cyberbolt/
 │   │   │   │   ├── page.tsx           # About page (team, stats, values, tech, timeline, FAQ)
 │   │   │   │   └── FaqAccordion.tsx   # Client-side FAQ accordion component
 │   │   │   ├── contact/page.tsx     # Contact form
+│   │   │   ├── glossary/page.tsx    # Cybersecurity glossary (60+ terms)
 │   │   │   ├── newsletter/
 │   │   │   │   └── unsubscribe/page.tsx # Public unsubscribe page
 │   │   │   ├── articles/            # Article list + search + [slug] detail
 │   │   │   ├── og/[slug]/route.tsx  # Dynamic OG image generation (edge)
 │   │   │   ├── rss.xml/route.ts     # RSS 2.0 feed
 │   │   │   ├── tools/
-│   │   │   │   └── owasp-checklist/page.tsx  # OWASP generator (admin-only)
+│   │   │   │   ├── page.tsx                  # Tools index page
+│   │   │   │   ├── owasp-checklist/page.tsx  # OWASP generator (admin-only)
+│   │   │   │   └── cve-feed/page.tsx         # CVE threat feed (public)
 │   │   │   ├── admin/
 │   │   │   │   ├── layout.tsx       # Admin shell + auth guard
 │   │   │   │   ├── page.tsx         # Dashboard
@@ -382,6 +396,11 @@ cyberbolt/
 - [x] Download article as JSON for LLM consumption
 - [x] JWT security hardening (refresh token rotation, dual blocklisting, 7d refresh TTL)
 - [x] Comprehensive research.md documentation for newbie developers
+- [x] Cybersecurity glossary (60+ terms, searchable, categorized)
+- [x] CVE threat feed (NVD API + CISA KEV, public)
+- [x] Difficulty levels on articles (beginner/intermediate/advanced)
+- [x] Tools index page
+- [x] Content coverage for all 10 categories
 - [ ] Comments system
 - [ ] Analytics dashboard
 - [ ] CI/CD pipeline (GitHub Actions)

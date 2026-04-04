@@ -20,8 +20,11 @@ class ArticleList(Resource):
         per_page = max(1, min(request.args.get("per_page", 12, type=int), MAX_PER_PAGE))
         category = request.args.get("category", "")[:50] or None
         tag = request.args.get("tag", "")[:50] or None
+        difficulty = request.args.get("difficulty", "")[:20] or None
+        if difficulty and difficulty not in ("beginner", "intermediate", "advanced"):
+            difficulty = None
 
-        articles, total = ArticleService.get_all(page=page, per_page=per_page, category=category, tag=tag)
+        articles, total = ArticleService.get_all(page=page, per_page=per_page, category=category, tag=tag, difficulty=difficulty)
         return {
             "articles": articles,
             "total": total,
