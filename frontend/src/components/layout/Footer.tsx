@@ -40,7 +40,7 @@ export default function Footer() {
               About
             </h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link href="/about" className="hover:text-white transition-colors">About Me</Link></li>
+              <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
               <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
               <li><Link href="/llms.txt" className="hover:text-white transition-colors flex items-center gap-1"><FileText className="h-3 w-3" /> llms.txt</Link></li>
             </ul>

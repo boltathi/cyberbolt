@@ -278,7 +278,9 @@ cyberbolt/
 │   │   │   ├── not-found.tsx        # 404 page
 │   │   │   ├── robots.ts            # robots.txt generator
 │   │   │   ├── sitemap.ts           # Sitemap generator
-│   │   │   ├── about/page.tsx       # About page
+│   │   │   ├── about/
+│   │   │   │   ├── page.tsx           # About page (team, stats, values, tech, timeline, FAQ)
+│   │   │   │   └── FaqAccordion.tsx   # Client-side FAQ accordion component
 │   │   │   ├── contact/page.tsx     # Contact form
 │   │   │   ├── articles/            # Article list + search + [slug] detail
 │   │   │   ├── og/[slug]/route.tsx  # Dynamic OG image generation (edge)
@@ -361,6 +363,7 @@ cyberbolt/
 - [x] Active nav highlighting with `usePathname`
 - [x] Security-focused categories (10, removed lifestyle)
 - [x] About page rewrite with real identity
+- [x] About page enhancement (stats bar, tech stack, timeline, values, skills tags, FAQ, structured data)
 - [x] Social share buttons (Twitter, LinkedIn, Reddit, HN)
 - [x] Table of Contents sidebar with scroll spy
 - [x] Newsletter signup (inline + footer, Redis backend)

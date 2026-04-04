@@ -81,6 +81,7 @@ interface PersonJsonLdProps {
   url?: string;
   jobTitle?: string;
   description?: string;
+  linkedinUrl?: string;
 }
 
 export function PersonJsonLd({
@@ -88,7 +89,9 @@ export function PersonJsonLd({
   url = SITE_URL,
   jobTitle = "AI Security Researcher & Developer",
   description,
+  linkedinUrl,
 }: PersonJsonLdProps) {
+  const sameAs = [linkedinUrl].filter(Boolean);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -96,7 +99,7 @@ export function PersonJsonLd({
     url,
     jobTitle,
     description,
-    sameAs: [],
+    sameAs,
   };
 
   return (
