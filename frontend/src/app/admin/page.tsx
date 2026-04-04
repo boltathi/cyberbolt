@@ -2,21 +2,27 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FileText, Plus, ArrowRight } from "lucide-react";
-import { articlesAPI } from "@/lib/api";
+import { FileText, Plus, ArrowRight, Mail } from "lucide-react";
+import { articlesAPI, newsletterAPI } from "@/lib/api";
 import type { Article, DashboardStats } from "@/types";
 import { formatDate } from "@/lib/utils";
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats>({ articles: 0 });
+  const [stats, setStats] = useState<DashboardStats>({ articles: 0, subscribers: 0 });
   const [recentArticles, setRecentArticles] = useState<Article[]>([]);
 
   useEffect(() => {
     async function loadDashboard() {
       try {
         const articlesData = await articlesAPI.adminList(1, 5);
-        setStats({ articles: articlesData.total });
+        setStats((s) => ({ ...s, articles: articlesData.total }));
         setRecentArticles(articlesData.items);
+      } catch {
+        // Silently fail
+      }
+      try {
+        const nlData = await newsletterAPI.subscribers();
+        setStats((s) => ({ ...s, subscribers: nlData.total }));
       } catch {
         // Silently fail
       }
@@ -26,6 +32,7 @@ export default function AdminDashboard() {
 
   const statCards = [
     { label: "Articles", value: stats.articles, icon: FileText, href: "/admin/articles", color: "text-blue-400" },
+    { label: "Subscribers", value: stats.subscribers, icon: Mail, href: "/admin/newsletter", color: "text-cyber-400" },
   ];
 
   return (

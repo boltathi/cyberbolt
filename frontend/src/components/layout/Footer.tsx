@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Shield, Twitter, Linkedin, FileText, Rss, Github } from "lucide-react";
+import { Shield, Twitter, Linkedin, FileText, Rss } from "lucide-react";
 import NewsletterCTA from "@/components/article/NewsletterCTA";
 
 export default function Footer() {
@@ -52,9 +52,6 @@ export default function Footer() {
               Connect
             </h3>
             <div className="flex gap-3">
-              <a href="https://github.com/boltathi" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
-                <Github className="h-5 w-5" />
-              </a>
               <a href="https://x.com/securecyberbolt" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>

@@ -9,7 +9,7 @@ import type {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Client-side fetch
-async function fetchAPI<T>(
+export async function fetchAPI<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
@@ -140,4 +140,15 @@ export const owaspAPI = {
     }),
   appTypes: () =>
     fetchAPI<{ app_types: string[] }>("/ai/owasp/app-types").then((d) => d.app_types),
+};
+
+// Newsletter API (admin-only)
+export const newsletterAPI = {
+  subscribers: () =>
+    fetchAPI<{ subscribers: { email: string; subscribed_at: string; status: string }[]; total: number; last_send: Record<string, string> | null }>("/newsletter/admin/subscribers"),
+  send: (subject: string, body: string) =>
+    fetchAPI<{ message: string; sent: number; failed: number; total: number }>("/newsletter/admin/send", {
+      method: "POST",
+      body: JSON.stringify({ subject, body }),
+    }),
 };

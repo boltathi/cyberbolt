@@ -4,6 +4,14 @@ from datetime import datetime, timezone
 from flask import request
 from flask_restx import Namespace, Resource
 from ...extensions import limiter, redis_data
+from ...utils.decorators import admin_required
+from ...services.newsletter_service import (
+    get_subscribers,
+    get_subscriber_count,
+    send_newsletter,
+    unsubscribe,
+    verify_unsubscribe_token,
+)
 
 ns = Namespace("newsletter", description="Newsletter subscriptions")
 
@@ -47,3 +55,69 @@ class NewsletterSubscribe(Resource):
         })
 
         return {"message": "Successfully subscribed! Welcome aboard."}, 201
+
+
+@ns.route("/unsubscribe")
+class NewsletterUnsubscribe(Resource):
+    def get(self):
+        """Unsubscribe via token-verified link (from email footer)."""
+        email = (request.args.get("email") or "").strip().lower()
+        token = request.args.get("token", "")
+
+        if not email or not token:
+            return {"error": "Missing parameters", "message": "Invalid unsubscribe link"}, 400
+
+        if not verify_unsubscribe_token(email, token):
+            return {"error": "Invalid token", "message": "This unsubscribe link is invalid or expired"}, 403
+
+        existed = unsubscribe(email)
+        if existed:
+            return {"message": f"Successfully unsubscribed {email}. You won't receive any more emails."}, 200
+        return {"message": "This email was not subscribed."}, 200
+
+
+@ns.route("/admin/subscribers")
+class NewsletterAdminSubscribers(Resource):
+    @admin_required()
+    def get(self):
+        """List all subscribers (admin only)."""
+        subscribers = get_subscribers()
+        last_send = None
+        if redis_data:
+            last_send = redis_data.hgetall("newsletter:last_send") or None
+
+        return {
+            "subscribers": subscribers,
+            "total": len(subscribers),
+            "last_send": last_send,
+        }, 200
+
+
+@ns.route("/admin/send")
+class NewsletterAdminSend(Resource):
+    @admin_required()
+    @limiter.limit("3/hour")
+    def post(self):
+        """Send newsletter to all subscribers (admin only)."""
+        data = request.get_json(silent=True)
+        if not data or not isinstance(data, dict):
+            return {"error": "Missing JSON body", "message": "Provide subject and body"}, 400
+
+        subject = (data.get("subject") or "").strip()
+        body = (data.get("body") or "").strip()
+
+        if not subject:
+            return {"error": "Missing subject", "message": "Subject is required"}, 400
+        if not body:
+            return {"error": "Missing body", "message": "Email body is required"}, 400
+        if len(subject) > 200:
+            return {"error": "Subject too long", "message": "Subject must be under 200 characters"}, 400
+
+        try:
+            result = send_newsletter(subject, body)
+            return {
+                "message": f"Newsletter sent to {result['sent']}/{result['total']} subscribers",
+                **result,
+            }, 200
+        except ValueError as e:
+            return {"error": "Send failed", "message": str(e)}, 503

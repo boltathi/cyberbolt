@@ -148,6 +148,7 @@ cd backend && source venv/bin/activate && python -m pytest tests/ -v
 | GET | `/api/v1/ai/articles/<slug>.md` | Article as markdown |
 | GET | `/api/v1/upload/image/<id>` | Serve uploaded image |
 | POST | `/api/v1/newsletter/subscribe` | Subscribe to newsletter |
+| GET | `/api/v1/newsletter/unsubscribe` | Unsubscribe (token-verified) |
 
 ### Auth
 | Method | Endpoint | Description |
@@ -166,6 +167,8 @@ cd backend && source venv/bin/activate && python -m pytest tests/ -v
 | GET | `/api/v1/ai/owasp/app-types` | List OWASP app types |
 | POST | `/api/v1/ai/owasp/generate` | Generate OWASP checklist |
 | POST | `/api/v1/upload/image` | Upload image (max 2 MB) |
+| GET | `/api/v1/newsletter/admin/subscribers` | List newsletter subscribers |
+| POST | `/api/v1/newsletter/admin/send` | Send newsletter to all subscribers |
 
 ## OWASP Top 10 Checklist Generator
 
@@ -251,6 +254,7 @@ cyberbolt/
 │   │   ├── services/
 │   │   │   ├── auth_service.py      # JWT auth + admin bootstrap
 │   │   │   ├── article_service.py   # Article CRUD + search
+│   │   │   ├── newsletter_service.py # Newsletter send + unsubscribe tokens
 │   │   │   └── owasp_service.py     # OWASP checklist + Ollama LLM
 │   │   ├── api/v1/
 │   │   │   ├── __init__.py      # Blueprint + namespace registration
@@ -260,7 +264,7 @@ cyberbolt/
 │   │   │   ├── ai.py            # llms.txt, AI content, OWASP generator
 │   │   │   ├── upload.py        # Image upload/serve (Redis-stored)
 │   │   │   ├── contact.py       # Contact form (SMTP)
-│   │   │   └── newsletter.py    # Newsletter subscribe (Redis-stored)
+│   │   │   └── newsletter.py    # Newsletter subscribe/unsubscribe/admin send
 │   │   └── utils/
 │   │       ├── decorators.py    # @admin_required()
 │   │       └── sanitize.py      # HTML/input sanitization
@@ -282,6 +286,8 @@ cyberbolt/
 │   │   │   │   ├── page.tsx           # About page (team, stats, values, tech, timeline, FAQ)
 │   │   │   │   └── FaqAccordion.tsx   # Client-side FAQ accordion component
 │   │   │   ├── contact/page.tsx     # Contact form
+│   │   │   ├── newsletter/
+│   │   │   │   └── unsubscribe/page.tsx # Public unsubscribe page
 │   │   │   ├── articles/            # Article list + search + [slug] detail
 │   │   │   ├── og/[slug]/route.tsx  # Dynamic OG image generation (edge)
 │   │   │   ├── rss.xml/route.ts     # RSS 2.0 feed
@@ -292,6 +298,7 @@ cyberbolt/
 │   │   │   │   ├── page.tsx         # Dashboard
 │   │   │   │   ├── login/           # Login page (own layout)
 │   │   │   │   ├── articles/        # Article CRUD pages
+│   │   │   │   ├── newsletter/page.tsx # Newsletter compose + subscriber list
 │   │   │   ├── llms.txt/route.ts        # Proxy to backend
 │   │   │   └── llms-full.txt/route.ts   # Proxy to backend
 │   │   ├── components/
@@ -367,6 +374,7 @@ cyberbolt/
 - [x] Social share buttons (Twitter, LinkedIn, Reddit, HN)
 - [x] Table of Contents sidebar with scroll spy
 - [x] Newsletter signup (inline + footer, Redis backend)
+- [x] Newsletter admin panel (compose, send, subscriber list, unsubscribe)
 - [x] Dynamic OG image generation (edge runtime)
 - [x] Canonical URLs and Twitter card metadata
 - [x] Code copy button on all code blocks

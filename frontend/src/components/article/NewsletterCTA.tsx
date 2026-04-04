@@ -45,7 +45,7 @@ export default function NewsletterCTA({ variant = "inline" }: { variant?: "inlin
           <span className="font-medium">You&apos;re subscribed!</span>
         </div>
         <p className="mt-2 text-sm text-gray-400">
-          You&apos;ll receive weekly AI security insights in your inbox.
+          You&apos;ll receive AI security insights directly in your inbox.
         </p>
       </div>
     );
@@ -113,7 +113,7 @@ export default function NewsletterCTA({ variant = "inline" }: { variant?: "inlin
         </p>
       )}
       <p className="mt-3 text-xs text-gray-600">
-        Join security professionals who read CyberBolt weekly.
+        Join security professionals who read CyberBolt.
       </p>
     </div>
   );

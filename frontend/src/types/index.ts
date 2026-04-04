@@ -43,6 +43,7 @@ export interface User {
 
 export interface DashboardStats {
   articles: number;
+  subscribers: number;
 }
 
 export interface OwaspChecklistItem {

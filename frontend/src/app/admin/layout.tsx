@@ -10,12 +10,14 @@ import {
   LogOut,
   Menu,
   X,
+  Mail,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/articles", label: "Articles", icon: FileText },
+  { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
 ];
 
 export default function AdminLayout({
