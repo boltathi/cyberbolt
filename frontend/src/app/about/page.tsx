@@ -1,8 +1,6 @@
 import {
   Shield, Code, Brain, Zap, ExternalLink, Twitter, Linkedin,
-  ArrowRight, BookOpen, Layers, Server, Database, Cpu,
-  ChevronDown, ChevronUp, Heart, Eye, Users, Sparkles, Globe,
-  Calendar, Rocket, Target, Award,
+  ArrowRight, BookOpen, Layers, Heart, Eye, Users,
 } from "lucide-react";
 import Link from "next/link";
 import { PersonJsonLd } from "@/components/seo/JsonLd";
@@ -19,22 +17,6 @@ const stats = [
   { label: "Categories Covered", value: "10", icon: Layers },
   { label: "Team Members", value: "2", icon: Users },
   { label: "Open Source", value: "100%", icon: Code },
-];
-
-const techStack = [
-  { name: "Flask", desc: "Python API", color: "from-green-400 to-emerald-500" },
-  { name: "Next.js 15", desc: "React Frontend", color: "from-white to-gray-400" },
-  { name: "Redis", desc: "Data & Cache", color: "from-red-400 to-rose-500" },
-  { name: "Ollama", desc: "Local LLM", color: "from-purple-400 to-violet-500" },
-  { name: "Tailwind", desc: "Styling", color: "from-cyan-400 to-sky-500" },
-  { name: "TypeScript", desc: "Type Safety", color: "from-blue-400 to-indigo-500" },
-];
-
-const milestones = [
-  { date: "Jan 2026", title: "Idea Born", desc: "CyberBolt concept created — a hands-on cybersecurity education platform.", icon: Sparkles },
-  { date: "Feb 2026", title: "Platform Built", desc: "Flask + Next.js + Redis stack fully architected and deployed on Contabo VPS.", icon: Rocket },
-  { date: "Mar 2026", title: "Content Launch", desc: "First articles published covering AI Security, Web Security, and Cloud Security.", icon: BookOpen },
-  { date: "Apr 2026", title: "AI Tools Live", desc: "OWASP Checklist Generator powered by local Ollama LLM goes live.", icon: Cpu },
 ];
 
 const values = [
@@ -224,54 +206,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Tech Stack */}
-        <section className="mb-16">
-          <h2 className="mb-6 text-xl font-bold text-white">Built With</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {techStack.map((tech) => (
-              <div key={tech.name} className="rounded-xl border border-white/10 bg-gray-900/50 p-4 text-center group hover:border-white/20 transition-colors">
-                <div className={`mx-auto mb-2 h-10 w-10 rounded-lg bg-gradient-to-br ${tech.color} flex items-center justify-center`}>
-                  <Server className="h-5 w-5 text-gray-950" />
-                </div>
-                <div className="font-semibold text-white text-sm">{tech.name}</div>
-                <div className="text-xs text-gray-500 mt-0.5">{tech.desc}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Timeline / Milestones */}
-        <section className="mb-16">
-          <h2 className="mb-6 text-xl font-bold text-white">Our Journey</h2>
-          <div className="relative">
-            {/* Vertical line */}
-            <div className="absolute left-[19px] top-2 bottom-2 w-px bg-gradient-to-b from-cyber-400/50 via-brand-400/30 to-transparent sm:left-1/2 sm:-translate-x-px" />
-
-            <div className="space-y-8">
-              {milestones.map((m, i) => (
-                <div key={m.title} className={`relative flex items-start gap-6 sm:gap-0 ${i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse"}`}>
-                  {/* Content */}
-                  <div className={`flex-1 ${i % 2 === 0 ? "sm:pr-12 sm:text-right" : "sm:pl-12 sm:text-left"}`}>
-                    <div className="rounded-xl border border-white/10 bg-gray-900/50 p-4 sm:inline-block">
-                      <div className="text-xs text-cyber-400 font-medium uppercase tracking-wider">{m.date}</div>
-                      <h3 className="mt-1 font-semibold text-white">{m.title}</h3>
-                      <p className="mt-1 text-sm text-gray-400 leading-relaxed">{m.desc}</p>
-                    </div>
-                  </div>
-
-                  {/* Dot */}
-                  <div className="absolute left-0 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-gray-950 sm:relative sm:left-auto">
-                    <m.icon className="h-4 w-4 text-cyber-400" />
-                  </div>
-
-                  {/* Spacer for the other side */}
-                  <div className="hidden flex-1 sm:block" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* About CyberBolt */}
         <section className="mb-16">
           <h2 className="mb-4 text-xl font-bold text-white">About CyberBolt</h2>
@@ -281,15 +215,6 @@ export default function AboutPage() {
               in a simplified, real-time way. Every article is written to be <strong>hands-on</strong> — you
               won&apos;t just read about prompt injection, you&apos;ll execute attacks on your own machine
               using free tools like Ollama.
-            </p>
-            <p className="text-gray-300 leading-relaxed">
-              The platform includes an <strong>OWASP Top 10 Checklist Generator</strong> powered
-              by a local LLM, a full-text search engine, and an enterprise-grade content editor.
-              Everything runs on a single VPS with Redis — no cloud dependencies, no vendor lock-in.
-            </p>
-            <p className="text-gray-300 leading-relaxed">
-              Built with Flask, Next.js 15, Redis, and Ollama. Maintained by Athithan Raj P and
-              Pavithra Mohan, the entire stack is optimized for speed, security, and simplicity.
             </p>
           </div>
         </section>
