@@ -341,7 +341,8 @@ cyberbolt/
 │   ├── next.config.ts
 │   ├── tailwind.config.ts
 │   └── package.json
-├── deploy-contabo.sh            # Full deployment script
+├── site.conf                    # Project-specific config (ports, name, emoji)
+├── deploy-contabo.sh            # Unified deployment script (reads site.conf)
 ├── migrate.sh                   # Data migration manager (backup/audit/migrate/rollback/cleanup)
 ├── install-ollama.sh            # Ollama + model installer
 ├── backups/                     # Redis RDB + JSON backups (gitignored)
@@ -402,6 +403,7 @@ cyberbolt/
 - [x] Difficulty levels on articles (beginner/intermediate/advanced)
 - [x] Tools index page
 - [x] Content coverage for all 10 categories
+- [x] Unified deployment script (`site.conf` + shared `deploy-contabo.sh`)
 - [ ] Comments system
 - [ ] Analytics dashboard
 - [ ] CI/CD pipeline (GitHub Actions)

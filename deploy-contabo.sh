@@ -1,22 +1,17 @@
 #!/bin/bash
-# ─── CyberBolt Deployment (Contabo) ──────────────────────────
+# ─── BoltWorld Unified Deployment (Contabo) ───────────────────
 #
-# Prerequisites (already done on your server):
-#   - Redis installed & running
-#   - Nginx installed
-#   - Node.js 18+ installed
-#   - Python 3.10+ installed
-#   - screen installed
+# This script reads site.conf for project-specific values.
+# The deploy logic is identical across all BoltWorld projects.
 #
 # Workflow:
 #   1. Push code to GitHub from local
 #   2. SSH into Contabo
-#   3. Clone: git clone https://github.com/boltathi/cyberbolt.git /opt/cyberbolt
-#   4. Create .env: cp /opt/cyberbolt/.env.example /opt/cyberbolt/.env && nano /opt/cyberbolt/.env
-#   5. Run: chmod +x /opt/cyberbolt/deploy-contabo.sh && /opt/cyberbolt/deploy-contabo.sh
+#   3. Clone repo into /opt/<APP_NAME>
+#   4. Create .env from .env.example
+#   5. Run: chmod +x deploy-contabo.sh && ./deploy-contabo.sh
 #
-# Re-deploy after code changes:
-#   cd /opt/cyberbolt && git pull && ./deploy-contabo.sh
+# Re-deploy: git pull && ./deploy-contabo.sh
 #
 # ──────────────────────────────────────────────────────────────
 
@@ -31,9 +26,28 @@ APP_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKEND_DIR="$APP_DIR/backend"
 FRONTEND_DIR="$APP_DIR/frontend"
 ENV_FILE="$APP_DIR/.env"
+SITE_CONF="$APP_DIR/site.conf"
 
-echo -e "${CYAN}🔒 CyberBolt Deployment${NC}"
+# ─── Load site.conf (project-specific values) ────────────────
+if [ ! -f "$SITE_CONF" ]; then
+    echo -e "${RED}❌ site.conf not found at $SITE_CONF${NC}"
+    echo "   This file defines APP_NAME, BACKEND_PORT, FRONTEND_PORT, etc."
+    exit 1
+fi
+
+source "$SITE_CONF"
+
+# Derived names
+SCREEN_BACKEND="${APP_NAME}-backend"
+SCREEN_FRONTEND="${APP_NAME}-frontend"
+LOG_BACKEND="/var/log/${APP_NAME}-backend.log"
+LOG_BACKEND_ERR="/var/log/${APP_NAME}-backend-error.log"
+LOG_FRONTEND="/var/log/${APP_NAME}-frontend.log"
+NGINX_CONF="/etc/nginx/sites-available/${APP_NAME}"
+
+echo -e "${CYAN}${APP_EMOJI} ${APP_LABEL} Deployment${NC}"
 echo -e "   Directory: ${APP_DIR}"
+echo -e "   Backend:   :${BACKEND_PORT}  Frontend: :${FRONTEND_PORT}"
 echo ""
 
 # ─── Check .env exists ───────────────────────────────────────
@@ -58,8 +72,6 @@ echo -e "${GREEN}   ✅ .env loaded${NC}"
 # ─── Check Redis ─────────────────────────────────────────────
 echo -e "${CYAN}[1/6] Checking Redis...${NC}"
 
-# Extract password from REDIS_URL (format: redis://:PASSWORD@host:port/db)
-# The password may be URL-encoded (e.g. %40 for @), so decode it for redis-cli
 REDIS_PASS=$(echo "$REDIS_URL" | sed -n 's|redis://:\([^@]*\)@.*|\1|p' | python3 -c "import sys, urllib.parse; print(urllib.parse.unquote(sys.stdin.read().strip()))")
 
 if [ -n "$REDIS_PASS" ]; then
@@ -95,7 +107,6 @@ source venv/bin/activate
 pip install -r requirements.txt -q
 echo -e "${GREEN}   ✅ Backend dependencies installed${NC}"
 
-# Quick sanity check
 python -c "from app import create_app; app = create_app(); print('   App factory OK')" 2>&1
 
 # ─── Frontend setup ──────────────────────────────────────────
@@ -106,19 +117,16 @@ cd "$FRONTEND_DIR"
 npm install --legacy-peer-deps -q 2>&1 | tail -1
 
 echo -e "   Building Next.js (this takes a minute)..."
-# NEXT_PUBLIC_* vars must be present at build time — Next.js inlines them
 NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
 NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" \
 npm run build 2>&1 | tail -10
 
-# Verify standalone build succeeded
 if [ ! -f ".next/standalone/server.js" ]; then
     echo -e "${RED}   ❌ Next.js standalone build failed — .next/standalone/server.js not found${NC}"
     echo "      Try running manually: cd $FRONTEND_DIR && npm run build"
     exit 1
 fi
 
-# Copy static assets to standalone (required for Next.js standalone mode)
 cp -r public .next/standalone/ 2>/dev/null || true
 cp -r .next/static .next/standalone/.next/ 2>/dev/null || true
 
@@ -127,9 +135,6 @@ echo -e "${GREEN}   ✅ Frontend built (standalone)${NC}"
 # ─── Nginx config ────────────────────────────────────────────
 echo -e "${CYAN}[4/6] Configuring Nginx...${NC}"
 
-NGINX_CONF="/etc/nginx/sites-available/cyberbolt"
-
-# If Certbot has already configured SSL, don't overwrite — just reload
 if [ -f "$NGINX_CONF" ] && grep -q "ssl_certificate" "$NGINX_CONF"; then
     echo -e "${GREEN}   ✅ Nginx SSL config exists (managed by Certbot) — skipping overwrite${NC}"
 else
@@ -138,9 +143,8 @@ server {
     listen 80;
     server_name ${DOMAIN} www.${DOMAIN};
 
-    # API → Flask backend (gunicorn on :5000)
     location /api/ {
-        proxy_pass http://127.0.0.1:5000;
+        proxy_pass http://127.0.0.1:${BACKEND_PORT};
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -149,9 +153,8 @@ server {
         client_max_body_size 3m;
     }
 
-    # Everything else → Next.js frontend (:3000)
     location / {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:${FRONTEND_PORT};
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -180,32 +183,28 @@ fi
 # ─── Start services in screen ────────────────────────────────
 echo -e "${CYAN}[5/6] Starting services in screen...${NC}"
 
-# Kill old screen sessions
-screen -S cyberbolt-backend -X quit 2>/dev/null || true
-screen -S cyberbolt-frontend -X quit 2>/dev/null || true
+screen -S "$SCREEN_BACKEND" -X quit 2>/dev/null || true
+screen -S "$SCREEN_FRONTEND" -X quit 2>/dev/null || true
 sleep 1
 
-# Kill anything on our ports
-lsof -ti:5000 | xargs kill -9 2>/dev/null || true
-lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+lsof -ti:${BACKEND_PORT} | xargs kill -9 2>/dev/null || true
+lsof -ti:${FRONTEND_PORT} | xargs kill -9 2>/dev/null || true
 sleep 1
 
-# Start Backend (gunicorn) — wsgi.py auto-loads .env via python-dotenv
-screen -dmS cyberbolt-backend bash -c "
+screen -dmS "$SCREEN_BACKEND" bash -c "
     cd $BACKEND_DIR && \
     source venv/bin/activate && \
     exec gunicorn wsgi:app \
-        --bind 127.0.0.1:5000 \
+        --bind 127.0.0.1:${BACKEND_PORT} \
         --workers 3 \
         --timeout 120 \
-        --access-logfile /var/log/cyberbolt-backend.log \
-        --error-logfile /var/log/cyberbolt-backend-error.log
+        --access-logfile ${LOG_BACKEND} \
+        --error-logfile ${LOG_BACKEND_ERR}
 "
 
-# Wait for backend
 echo -n "   Waiting for backend"
 for i in {1..20}; do
-    if curl -s http://127.0.0.1:5000/api/v1/health 2>/dev/null | grep -q "healthy"; then
+    if curl -s http://127.0.0.1:${BACKEND_PORT}/api/v1/health 2>/dev/null | grep -q "healthy"; then
         break
     fi
     echo -n "."
@@ -213,30 +212,29 @@ for i in {1..20}; do
 done
 echo ""
 
-HEALTH_RESP=$(curl -s http://127.0.0.1:5000/api/v1/health 2>/dev/null)
+HEALTH_RESP=$(curl -s http://127.0.0.1:${BACKEND_PORT}/api/v1/health 2>/dev/null)
 if echo "$HEALTH_RESP" | grep -q "healthy"; then
-    echo -e "${GREEN}   ✅ Backend running  →  screen -r cyberbolt-backend${NC}"
+    echo -e "${GREEN}   ✅ Backend running  →  screen -r ${SCREEN_BACKEND}${NC}"
 else
     echo -e "${RED}   ❌ Backend failed. Health response: $HEALTH_RESP${NC}"
-    echo "      screen -r cyberbolt-backend"
-    echo "      tail -20 /var/log/cyberbolt-backend-error.log"
+    echo "      screen -r ${SCREEN_BACKEND}"
+    echo "      tail -20 ${LOG_BACKEND_ERR}"
     exit 1
 fi
 
-# Start Frontend (Next.js standalone)
-screen -dmS cyberbolt-frontend bash -c "
+screen -dmS "$SCREEN_FRONTEND" bash -c "
     cd $FRONTEND_DIR && \
-    export PORT=3000 && \
+    export PORT=${FRONTEND_PORT} && \
     export HOSTNAME=0.0.0.0 && \
     export NEXT_PUBLIC_API_URL='$NEXT_PUBLIC_API_URL' && \
     export INTERNAL_API_URL='$INTERNAL_API_URL' && \
     export NEXT_PUBLIC_SITE_URL='$NEXT_PUBLIC_SITE_URL' && \
-    node .next/standalone/server.js >> /var/log/cyberbolt-frontend.log 2>&1
+    node .next/standalone/server.js >> ${LOG_FRONTEND} 2>&1
 "
 
 echo -n "   Waiting for frontend"
 for i in {1..20}; do
-    if curl -s http://127.0.0.1:3000 > /dev/null 2>&1; then
+    if curl -s http://127.0.0.1:${FRONTEND_PORT} > /dev/null 2>&1; then
         break
     fi
     echo -n "."
@@ -244,15 +242,15 @@ for i in {1..20}; do
 done
 echo ""
 
-if curl -s http://127.0.0.1:3000 > /dev/null 2>&1; then
-    echo -e "${GREEN}   ✅ Frontend running →  screen -r cyberbolt-frontend${NC}"
+if curl -s http://127.0.0.1:${FRONTEND_PORT} > /dev/null 2>&1; then
+    echo -e "${GREEN}   ✅ Frontend running →  screen -r ${SCREEN_FRONTEND}${NC}"
 else
     echo -e "${RED}   ❌ Frontend failed. Debug:${NC}"
-    echo "      tail -30 /var/log/cyberbolt-frontend.log"
+    echo "      tail -30 ${LOG_FRONTEND}"
     echo "      screen -ls"
-    if [ -f /var/log/cyberbolt-frontend.log ]; then
+    if [ -f "${LOG_FRONTEND}" ]; then
         echo -e "${RED}   Last 10 lines of frontend log:${NC}"
-        tail -10 /var/log/cyberbolt-frontend.log
+        tail -10 "${LOG_FRONTEND}"
     fi
     exit 1
 fi
@@ -267,7 +265,7 @@ python scripts/seed.py
 # ─── Done ─────────────────────────────────────────────────────
 echo ""
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}🎉 CyberBolt is live!${NC}"
+echo -e "${GREEN}🎉 ${APP_LABEL} is live!${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo "   Site:     http://${DOMAIN}"
@@ -275,18 +273,18 @@ echo "   API:      http://${DOMAIN}/api/v1/health"
 echo "   Admin:    http://${DOMAIN}/admin"
 echo ""
 echo -e "${CYAN}Screen sessions:${NC}"
-echo "   screen -r cyberbolt-backend     # view backend logs"
-echo "   screen -r cyberbolt-frontend    # view frontend logs"
+echo "   screen -r ${SCREEN_BACKEND}     # view backend logs"
+echo "   screen -r ${SCREEN_FRONTEND}    # view frontend logs"
 echo "   Ctrl+A then D                   # detach from screen"
 echo ""
 echo -e "${CYAN}Stop / Restart:${NC}"
-echo "   screen -S cyberbolt-backend -X quit     # stop backend"
-echo "   screen -S cyberbolt-frontend -X quit    # stop frontend"
+echo "   screen -S ${SCREEN_BACKEND} -X quit     # stop backend"
+echo "   screen -S ${SCREEN_FRONTEND} -X quit    # stop frontend"
 echo "   ./deploy-contabo.sh                     # redeploy everything"
 echo ""
 echo -e "${CYAN}Logs:${NC}"
-echo "   tail -f /var/log/cyberbolt-backend.log"
-echo "   tail -f /var/log/cyberbolt-backend-error.log"
+echo "   tail -f ${LOG_BACKEND}"
+echo "   tail -f ${LOG_BACKEND_ERR}"
 echo ""
 echo -e "${CYAN}SSL setup (after DNS points here):${NC}"
 echo "   certbot --nginx -d ${DOMAIN} -d www.${DOMAIN}"
