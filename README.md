@@ -46,6 +46,7 @@
 | **AI/LLM** | Ollama + Qwen2.5-0.5B (local, CPU-only, ~398 MB) |
 | **Deployment** | Contabo VPS, Nginx, screen sessions |
 | **SEO** | JSON-LD, Dynamic Sitemap, robots.txt, llms.txt, RSS 2.0, Dynamic OG Images, Canonical URLs |
+| **PWA** | @ducanh2912/next-pwa, Workbox, Service Worker, Offline Support, Install Prompt |
 
 ## Features
 
@@ -82,6 +83,13 @@
 - 🧠 **Ollama** — Local LLM server running Qwen2.5-0.5B (~600 MB RAM), auto-unloads after 5 min idle
 - 🔒 **Security** — Rate limiting, CORS, HSTS, CSP headers, bcrypt, JWT auth with refresh token rotation, input sanitization (bleach), 5 MB request limit, Marshmallow validation
 - 📈 **Scalable** — Gunicorn workers, standalone Next.js, horizontal scaling ready
+
+### Progressive Web App (PWA)
+- 📲 **Install Prompt** — "Install CyberBolt" banner appears after 3 seconds, dismissible for 7 days, triggers native app install via `beforeinstallprompt` API
+- 📴 **Offline Support** — Previously visited pages cached by service worker. Offline fallback page suggests cached pages (articles, glossary, tools)
+- ⚡ **Caching Strategies** — CacheFirst for static assets & Google Fonts (30-day TTL), StaleWhileRevalidate for article & glossary APIs (1-hour TTL), NetworkFirst for CVE feed & page navigations (1-day TTL, 5s timeout)
+- 🎨 **Web App Manifest** — Standalone display, teal (#2dd4bf) theme color, app shortcuts for Tools, Articles & Glossary, PWA-optimized icons (192×192, 512×512, maskable)
+- 📱 **Native Experience** — Standalone mode, apple-web-app-capable, custom status bar styling, app icon on home screen
 
 ## Quick Start
 
@@ -288,9 +296,10 @@ cyberbolt/
 ├── frontend/
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── layout.tsx           # Root layout (Header/Footer)
+│   │   │   ├── layout.tsx           # Root layout (Header/Footer/InstallPrompt)
 │   │   │   ├── page.tsx             # Home page
 │   │   │   ├── not-found.tsx        # 404 page
+│   │   │   ├── _offline/page.tsx    # PWA offline fallback page
 │   │   │   ├── robots.ts            # robots.txt generator
 │   │   │   ├── sitemap.ts           # Sitemap generator
 │   │   │   ├── about/
@@ -326,7 +335,8 @@ cyberbolt/
 │   │   │   ├── editor/
 │   │   │   │   └── RichTextEditor.tsx # TipTap WYSIWYG editor + image upload
 │   │   │   ├── ui/
-│   │   │   │   └── CopyLinkButton.tsx # Copy-to-clipboard button (legacy)
+│   │   │   │   ├── CopyLinkButton.tsx # Copy-to-clipboard button (legacy)
+│   │   │   │   └── InstallPrompt.tsx  # PWA install prompt banner
 │   │   │   ├── layout/
 │   │   │   │   ├── Header.tsx       # Nav bar (5 links incl. Tools)
 │   │   │   │   └── Footer.tsx       # Site footer (newsletter, RSS, GitHub)
@@ -340,7 +350,15 @@ cyberbolt/
 │   │       └── index.ts         # TypeScript interfaces
 │   ├── next.config.ts
 │   ├── tailwind.config.ts
-│   └── package.json
+│   ├── package.json
+│   ├── scripts/
+│   │   └── generate-icons.js    # PWA icon generator (sharp)
+│   └── public/
+│       ├── manifest.json        # PWA Web App Manifest
+│       ├── icon.svg             # SVG logo (shield + bolt)
+│       ├── favicon.ico          # Favicon (32×32)
+│       ├── apple-touch-icon.png # Apple touch icon (180×180)
+│       └── icons/               # PWA icons (192, 512, maskable)
 ├── site.conf                    # Project-specific config (ports, name, emoji)
 ├── deploy-contabo.sh            # Unified deployment script (reads site.conf)
 ├── migrate.sh                   # Data migration manager (backup/audit/migrate/rollback/cleanup)
@@ -404,6 +422,11 @@ cyberbolt/
 - [x] Tools index page
 - [x] Content coverage for all 10 categories
 - [x] Unified deployment script (`site.conf` + shared `deploy-contabo.sh`)
+- [x] Progressive Web App (PWA) with offline support
+- [x] Install prompt ("Add to Home Screen" banner)
+- [x] Offline fallback page with cached page suggestions
+- [x] Service worker with multi-strategy caching (articles, glossary, CVE feed)
+- [x] PWA icons and Web App Manifest
 - [ ] Comments system
 - [ ] Analytics dashboard
 - [ ] CI/CD pipeline (GitHub Actions)

@@ -1,0 +1,58 @@
+{
+  "name": "CyberBolt — AI Security & Technology",
+  "short_name": "CyberBolt",
+  "description": "AI security articles, OWASP checklist generator, CVE threat feed, and cybersecurity glossary.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#2dd4bf",
+  "background_color": "#030712",
+  "categories": ["security", "technology", "education"],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Security Tools",
+      "short_name": "Tools",
+      "url": "/tools",
+      "description": "OWASP Checklist Generator & CVE Threat Feed"
+    },
+    {
+      "name": "Articles",
+      "short_name": "Articles",
+      "url": "/articles",
+      "description": "AI security & technology articles"
+    },
+    {
+      "name": "Glossary",
+      "short_name": "Glossary",
+      "url": "/glossary",
+      "description": "60+ cybersecurity terms & definitions"
+    }
+  ]
+}
